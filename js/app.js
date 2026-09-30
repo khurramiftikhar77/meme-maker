@@ -1,0 +1,824 @@
+(() => {
+  'use strict';
+
+  const IMGFLIP_API = 'https://api.imgflip.com/get_memes';
+  const MAX_UPLOAD_SIDE = 2400;
+  const HANDLE_RADIUS = 7;   // screen px
+  const HANDLE_HIT = 14;     // screen px
+  const BOX_PAD = 6;         // screen px
+  const ROTATE_OFFSET = 26;  // screen px
+  const LINE_HEIGHT = 1.15;
+
+  const $ = (sel) => document.querySelector(sel);
+
+  const els = {
+    tabs: document.querySelectorAll('.tab'),
+    panels: document.querySelectorAll('.tab-panel'),
+    searchInput: $('#searchInput'),
+    searchStatus: $('#searchStatus'),
+    templateGrid: $('#templateGrid'),
+    fileInput: $('#fileInput'),
+    dropZone: $('#dropZone'),
+    canvas: $('#canvas'),
+    emptyState: $('#emptyState'),
+    addTextBtn: $('#addTextBtn'),
+    copyBtn: $('#copyBtn'),
+    shareBtn: $('#shareBtn'),
+    downloadBtn: $('#downloadBtn'),
+    toast: $('#toast'),
+    layerList: $('#layerList'),
+    noSelection: $('#noSelection'),
+    propsForm: $('#propsForm'),
+    propText: $('#propText'),
+    propFont: $('#propFont'),
+    propSize: $('#propSize'),
+    propSizeOut: $('#propSizeOut'),
+    propRotate: $('#propRotate'),
+    propRotateOut: $('#propRotateOut'),
+    propFill: $('#propFill'),
+    propStroke: $('#propStroke'),
+    propStrokeWidth: $('#propStrokeWidth'),
+    propStrokeWidthOut: $('#propStrokeWidthOut'),
+    propAlign: $('#propAlign'),
+    propUpper: $('#propUpper'),
+    duplicateBtn: $('#duplicateBtn'),
+    deleteBtn: $('#deleteBtn'),
+  };
+
+  const ctx = els.canvas.getContext('2d');
+
+  const state = {
+    image: null,        // CanvasImageSource
+    imageName: 'meme',
+    exportable: true,   // false when the image is cross-origin without CORS
+    layers: [],
+    selectedId: null,
+    drag: null,
+    templates: [],
+  };
+
+  let nextId = 1;
+  let renderQueued = false;
+  let toastTimer = null;
+
+  /* ---------------------------------------------------------------- */
+  /* Tabs                                                              */
+  /* ---------------------------------------------------------------- */
+
+  els.tabs.forEach((tab) => {
+    tab.addEventListener('click', () => {
+      els.tabs.forEach((t) => {
+        const active = t === tab;
+        t.classList.toggle('is-active', active);
+        t.setAttribute('aria-selected', String(active));
+      });
+      els.panels.forEach((p) => p.classList.toggle('is-active', p.dataset.panel === tab.dataset.tab));
+    });
+  });
+
+  /* ---------------------------------------------------------------- */
+  /* Template search (Imgflip)                                         */
+  /* ---------------------------------------------------------------- */
+
+  async function loadTemplates() {
+    els.searchStatus.textContent = 'Loading popular templates…';
+    try {
+      const res = await fetch(IMGFLIP_API);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json();
+      if (!json.success) throw new Error('Imgflip returned an error');
+      state.templates = json.data.memes;
+      renderTemplates();
+    } catch (err) {
+      els.searchStatus.innerHTML = '';
+      els.searchStatus.append('Could not load templates. ');
+      const retry = document.createElement('button');
+      retry.className = 'btn';
+      retry.textContent = 'Retry';
+      retry.addEventListener('click', loadTemplates);
+      els.searchStatus.append(retry);
+      console.error(err);
+    }
+  }
+
+  function renderTemplates() {
+    const terms = els.searchInput.value.toLowerCase().split(/\s+/).filter(Boolean);
+    const matches = state.templates.filter((t) => {
+      const name = t.name.toLowerCase();
+      return terms.every((term) => name.includes(term));
+    });
+
+    els.templateGrid.replaceChildren(...matches.map((t) => {
+      const btn = document.createElement('button');
+      btn.className = 'template';
+      btn.title = t.name;
+      const img = document.createElement('img');
+      img.src = t.url;
+      img.alt = t.name;
+      img.loading = 'lazy';
+      const label = document.createElement('span');
+      label.textContent = t.name;
+      btn.append(img, label);
+      btn.addEventListener('click', () => loadTemplate(t));
+      return btn;
+    }));
+
+    if (!state.templates.length) return;
+    els.searchStatus.textContent = terms.length
+      ? `${matches.length} template${matches.length === 1 ? '' : 's'} match "${els.searchInput.value.trim()}"`
+      : `${state.templates.length} popular templates`;
+  }
+
+  els.searchInput.addEventListener('input', renderTemplates);
+
+  function loadTemplate(t) {
+    showToast('Loading template…');
+    loadRemoteImage(t.url)
+      .then(({ img, exportable }) => {
+        setImage(img, t.name, exportable, t.box_count || 2);
+        showToast(exportable ? '' : 'This image blocks downloads from other sites. Try another template.');
+      })
+      .catch(() => showToast('Could not load that image.'));
+  }
+
+  function loadRemoteImage(url) {
+    const load = (withCors) => new Promise((resolve, reject) => {
+      const img = new Image();
+      if (withCors) img.crossOrigin = 'anonymous';
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = url;
+    });
+    return load(true)
+      .then((img) => ({ img, exportable: true }))
+      .catch(() => load(false).then((img) => ({ img, exportable: false })));
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* Upload / drag and drop / paste                                    */
+  /* ---------------------------------------------------------------- */
+
+  els.fileInput.addEventListener('change', () => {
+    const file = els.fileInput.files[0];
+    if (file) loadFile(file);
+    els.fileInput.value = '';
+  });
+
+  ['dragenter', 'dragover'].forEach((type) => {
+    els.dropZone.addEventListener(type, (e) => {
+      e.preventDefault();
+      els.dropZone.classList.add('is-over');
+    });
+  });
+  ['dragleave', 'drop'].forEach((type) => {
+    els.dropZone.addEventListener(type, () => els.dropZone.classList.remove('is-over'));
+  });
+  els.dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    const file = [...e.dataTransfer.files].find((f) => f.type.startsWith('image/'));
+    if (file) loadFile(file);
+    else showToast('Please drop an image file.');
+  });
+
+  // Dropping an image anywhere else should not navigate away from the app.
+  window.addEventListener('dragover', (e) => e.preventDefault());
+  window.addEventListener('drop', (e) => {
+    e.preventDefault();
+    const file = [...(e.dataTransfer?.files || [])].find((f) => f.type.startsWith('image/'));
+    if (file) loadFile(file);
+  });
+
+  window.addEventListener('paste', (e) => {
+    if (isTyping(e.target)) return;
+    const item = [...(e.clipboardData?.items || [])].find((i) => i.type.startsWith('image/'));
+    if (!item) return;
+    e.preventDefault();
+    loadFile(item.getAsFile());
+  });
+
+  function loadFile(file) {
+    if (!file.type.startsWith('image/')) {
+      showToast('That file is not an image.');
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const name = file.name.replace(/\.[^.]+$/, '') || 'meme';
+      setImage(downscale(img), name, true, 2);
+      showToast('');
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      showToast('Could not read that image.');
+    };
+    img.src = url;
+  }
+
+  // Keep very large photos at a size the editor can redraw smoothly.
+  function downscale(img) {
+    const w = img.naturalWidth;
+    const h = img.naturalHeight;
+    const scale = Math.min(1, MAX_UPLOAD_SIDE / Math.max(w, h));
+    if (scale === 1) return img;
+    const c = document.createElement('canvas');
+    c.width = Math.round(w * scale);
+    c.height = Math.round(h * scale);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    return c;
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* Image + layers                                                    */
+  /* ---------------------------------------------------------------- */
+
+  function setImage(img, name, exportable, boxCount) {
+    state.image = img;
+    state.imageName = name;
+    state.exportable = exportable;
+    state.layers = [];
+    state.selectedId = null;
+
+    const w = img.naturalWidth || img.width;
+    const h = img.naturalHeight || img.height;
+    els.canvas.width = w;
+    els.canvas.height = h;
+    els.canvas.hidden = false;
+    els.canvas.tabIndex = 0;
+    els.emptyState.hidden = true;
+
+    els.propSize.max = Math.max(300, Math.round(Math.min(w, h) * 0.6));
+
+    const count = Math.max(1, Math.min(boxCount, 6));
+    if (count === 2) {
+      addLayer({ text: 'TOP TEXT', y: 0.12 }, false);
+      addLayer({ text: 'BOTTOM TEXT', y: 0.88 }, false);
+    } else {
+      for (let i = 0; i < count; i++) {
+        addLayer({ text: `TEXT ${i + 1}`, y: (i + 0.5) / count }, false);
+      }
+    }
+    select(state.layers[0].id);
+
+    [els.addTextBtn, els.copyBtn, els.shareBtn, els.downloadBtn].forEach((b) => { b.disabled = false; });
+    els.copyBtn.disabled = els.shareBtn.disabled = els.downloadBtn.disabled = !exportable;
+  }
+
+  function addLayer({ text = 'YOUR TEXT', y = 0.5 } = {}, selectIt = true) {
+    const W = els.canvas.width;
+    const H = els.canvas.height;
+    const fontSize = Math.max(16, Math.round(Math.min(W, H) * 0.09));
+    const layer = {
+      id: nextId++,
+      text,
+      x: W / 2,
+      y: H * y,
+      width: Math.round(W * 0.92),
+      fontSize,
+      fontFamily: 'Impact, Anton, sans-serif',
+      fill: '#ffffff',
+      stroke: '#000000',
+      strokeWidth: Math.max(1, Math.round(fontSize / 14 * 2) / 2),
+      rotation: 0,
+      align: 'center',
+      uppercase: true,
+    };
+    state.layers.push(layer);
+    if (selectIt) select(layer.id);
+    else renderLayerList();
+    return layer;
+  }
+
+  function selectedLayer() {
+    return state.layers.find((l) => l.id === state.selectedId) || null;
+  }
+
+  function select(id) {
+    state.selectedId = id;
+    syncProps();
+    renderLayerList();
+    requestRender();
+  }
+
+  function removeSelected() {
+    const layer = selectedLayer();
+    if (!layer) return;
+    state.layers = state.layers.filter((l) => l !== layer);
+    select(state.layers.length ? state.layers[state.layers.length - 1].id : null);
+  }
+
+  function duplicateSelected() {
+    const layer = selectedLayer();
+    if (!layer) return;
+    const offset = els.canvas.width * 0.03;
+    const copy = { ...layer, id: nextId++, x: layer.x + offset, y: layer.y + offset };
+    state.layers.push(copy);
+    select(copy.id);
+  }
+
+  function renderLayerList() {
+    els.layerList.replaceChildren(...state.layers.map((layer, i) => {
+      const li = document.createElement('li');
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = layer.text.trim() || `(empty text ${i + 1})`;
+      btn.classList.toggle('is-selected', layer.id === state.selectedId);
+      btn.addEventListener('click', () => select(layer.id));
+      li.append(btn);
+      return li;
+    }));
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* Properties panel                                                  */
+  /* ---------------------------------------------------------------- */
+
+  function syncProps() {
+    const layer = selectedLayer();
+    els.propsForm.hidden = !layer;
+    els.noSelection.hidden = !!layer || !state.image;
+    if (!layer) return;
+
+    if (els.propText.value !== layer.text) els.propText.value = layer.text;
+    els.propFont.value = layer.fontFamily;
+    els.propSize.value = layer.fontSize;
+    els.propSizeOut.textContent = Math.round(layer.fontSize);
+    els.propRotate.value = Math.round(layer.rotation);
+    els.propRotateOut.textContent = `${Math.round(layer.rotation)}°`;
+    els.propFill.value = layer.fill;
+    els.propStroke.value = layer.stroke;
+    els.propStrokeWidth.value = layer.strokeWidth;
+    els.propStrokeWidthOut.textContent = layer.strokeWidth;
+    els.propUpper.checked = layer.uppercase;
+    els.propAlign.querySelectorAll('button').forEach((b) => {
+      b.classList.toggle('is-active', b.dataset.align === layer.align);
+    });
+  }
+
+  function bindProp(input, event, apply) {
+    input.addEventListener(event, () => {
+      const layer = selectedLayer();
+      if (!layer) return;
+      apply(layer);
+      syncProps();
+      requestRender();
+    });
+  }
+
+  bindProp(els.propText, 'input', (l) => { l.text = els.propText.value; renderLayerList(); });
+  bindProp(els.propFont, 'change', (l) => {
+    l.fontFamily = els.propFont.value;
+    ensureFont(l.fontFamily);
+  });
+  bindProp(els.propSize, 'input', (l) => { l.fontSize = Number(els.propSize.value); });
+  bindProp(els.propRotate, 'input', (l) => { l.rotation = Number(els.propRotate.value); });
+  bindProp(els.propFill, 'input', (l) => { l.fill = els.propFill.value; });
+  bindProp(els.propStroke, 'input', (l) => { l.stroke = els.propStroke.value; });
+  bindProp(els.propStrokeWidth, 'input', (l) => { l.strokeWidth = Number(els.propStrokeWidth.value); });
+  bindProp(els.propUpper, 'change', (l) => { l.uppercase = els.propUpper.checked; });
+
+  els.propAlign.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-align]');
+    const layer = selectedLayer();
+    if (!btn || !layer) return;
+    layer.align = btn.dataset.align;
+    syncProps();
+    requestRender();
+  });
+
+  els.addTextBtn.addEventListener('click', () => {
+    addLayer();
+    els.propText.focus();
+    els.propText.select();
+  });
+  els.duplicateBtn.addEventListener('click', duplicateSelected);
+  els.deleteBtn.addEventListener('click', removeSelected);
+
+  function ensureFont(family) {
+    if (!document.fonts?.load) return;
+    document.fonts.load(`40px ${family}`).then(requestRender).catch(() => {});
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* Rendering                                                         */
+  /* ---------------------------------------------------------------- */
+
+  function requestRender() {
+    if (renderQueued) return;
+    renderQueued = true;
+    requestAnimationFrame(() => {
+      renderQueued = false;
+      if (state.image) drawScene(ctx, true);
+    });
+  }
+
+  function drawScene(c, withOverlay) {
+    const { width: W, height: H } = c.canvas;
+    c.clearRect(0, 0, W, H);
+    c.drawImage(state.image, 0, 0, W, H);
+    state.layers.forEach((layer) => drawLayer(c, layer));
+    if (withOverlay) {
+      const layer = selectedLayer();
+      if (layer) drawSelection(c, layer);
+    }
+  }
+
+  function fontString(layer) {
+    return `${layer.fontSize}px ${layer.fontFamily}`;
+  }
+
+  // Word-wrap the layer's text to its box width. Returns lines and box height.
+  function layout(c, layer) {
+    c.font = fontString(layer);
+    const text = layer.uppercase ? layer.text.toUpperCase() : layer.text;
+    const maxWidth = layer.width;
+    const lines = [];
+
+    text.split('\n').forEach((paragraph) => {
+      const words = paragraph.split(/\s+/).filter(Boolean);
+      if (!words.length) {
+        lines.push('');
+        return;
+      }
+      let line = '';
+      words.forEach((word) => {
+        const candidate = line ? `${line} ${word}` : word;
+        if (c.measureText(candidate).width <= maxWidth) {
+          line = candidate;
+          return;
+        }
+        if (line) lines.push(line);
+        // Break words that are wider than the box on their own.
+        line = '';
+        for (const ch of word) {
+          if (line && c.measureText(line + ch).width > maxWidth) {
+            lines.push(line);
+            line = '';
+          }
+          line += ch;
+        }
+      });
+      lines.push(line);
+    });
+
+    const lineHeight = layer.fontSize * LINE_HEIGHT;
+    return { lines, lineHeight, height: Math.max(1, lines.length) * lineHeight };
+  }
+
+  function drawLayer(c, layer) {
+    const { lines, lineHeight, height } = layout(c, layer);
+    c.save();
+    c.translate(layer.x, layer.y);
+    c.rotate(toRad(layer.rotation));
+    c.font = fontString(layer);
+    c.textAlign = layer.align;
+    c.textBaseline = 'middle';
+    c.lineJoin = 'round';
+    c.miterLimit = 2;
+
+    const x = layer.align === 'left' ? -layer.width / 2 : layer.align === 'right' ? layer.width / 2 : 0;
+    lines.forEach((line, i) => {
+      const y = -height / 2 + lineHeight * (i + 0.5);
+      if (layer.strokeWidth > 0) {
+        c.strokeStyle = layer.stroke;
+        c.lineWidth = layer.strokeWidth * 2; // strokes are centred on the glyph edge
+        c.strokeText(line, x, y);
+      }
+      c.fillStyle = layer.fill;
+      c.fillText(line, x, y);
+    });
+    c.restore();
+  }
+
+  function drawSelection(c, layer) {
+    const s = screenScale();
+    const { height } = layout(c, layer);
+    const pad = BOX_PAD * s;
+    const hw = layer.width / 2 + pad;
+    const hh = height / 2 + pad;
+
+    c.save();
+    c.translate(layer.x, layer.y);
+    c.rotate(toRad(layer.rotation));
+
+    c.lineWidth = 1.5 * s;
+    c.setLineDash([6 * s, 4 * s]);
+    c.strokeStyle = '#ffcc00';
+    c.strokeRect(-hw, -hh, hw * 2, hh * 2);
+    c.setLineDash([]);
+
+    const handles = handlePositions(layer, height);
+    const rotate = handles.find((h) => h.type === 'rotate');
+    c.beginPath();
+    c.moveTo(0, Math.sign(rotate.y) * hh);
+    c.lineTo(0, rotate.y);
+    c.stroke();
+
+    handles.forEach(({ x, y }) => {
+      c.beginPath();
+      c.arc(x, y, HANDLE_RADIUS * s, 0, Math.PI * 2);
+      c.fillStyle = '#ffcc00';
+      c.fill();
+      c.lineWidth = 1.5 * s;
+      c.strokeStyle = '#111';
+      c.stroke();
+    });
+    c.restore();
+  }
+
+  // Handle centres in the layer's local (unrotated) coordinate space.
+  function handlePositions(layer, height) {
+    const s = screenScale();
+    const pad = BOX_PAD * s;
+    const hw = layer.width / 2 + pad;
+    const hh = height / 2 + pad;
+    // Put the rotate handle below the box when above would fall off the image.
+    const rotateY = layer.y - hh - ROTATE_OFFSET * s - HANDLE_RADIUS * s < 0
+      ? hh + ROTATE_OFFSET * s
+      : -hh - ROTATE_OFFSET * s;
+    return [
+      { type: 'scale', x: hw, y: hh },
+      { type: 'width', x: -hw, y: 0 },
+      { type: 'width', x: hw, y: 0 },
+      { type: 'rotate', x: 0, y: rotateY },
+    ];
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* Pointer interaction                                               */
+  /* ---------------------------------------------------------------- */
+
+  // Canvas pixels per CSS pixel, so handles stay the same size on screen.
+  function screenScale() {
+    const rect = els.canvas.getBoundingClientRect();
+    return rect.width ? els.canvas.width / rect.width : 1;
+  }
+
+  function toCanvasPoint(e) {
+    const rect = els.canvas.getBoundingClientRect();
+    return {
+      x: (e.clientX - rect.left) * (els.canvas.width / rect.width),
+      y: (e.clientY - rect.top) * (els.canvas.height / rect.height),
+    };
+  }
+
+  function toLocal(layer, p) {
+    const a = -toRad(layer.rotation);
+    const dx = p.x - layer.x;
+    const dy = p.y - layer.y;
+    return {
+      x: dx * Math.cos(a) - dy * Math.sin(a),
+      y: dx * Math.sin(a) + dy * Math.cos(a),
+    };
+  }
+
+  function pointerAngle(layer, p) {
+    return Math.atan2(p.y - layer.y, p.x - layer.x) * 180 / Math.PI;
+  }
+
+  function hitHandle(p) {
+    const layer = selectedLayer();
+    if (!layer) return null;
+    const local = toLocal(layer, p);
+    const { height } = layout(ctx, layer);
+    const r = HANDLE_HIT * screenScale();
+    const handle = handlePositions(layer, height)
+      .find((h) => Math.hypot(local.x - h.x, local.y - h.y) <= r);
+    return handle ? { layer, handle } : null;
+  }
+
+  function hitLayer(p) {
+    const pad = BOX_PAD * screenScale();
+    for (let i = state.layers.length - 1; i >= 0; i--) {
+      const layer = state.layers[i];
+      const local = toLocal(layer, p);
+      const { height } = layout(ctx, layer);
+      if (Math.abs(local.x) <= layer.width / 2 + pad && Math.abs(local.y) <= height / 2 + pad) {
+        return layer;
+      }
+    }
+    return null;
+  }
+
+  function cursorFor(p) {
+    const hit = hitHandle(p);
+    if (hit) {
+      if (hit.handle.type === 'rotate') return 'grab';
+      if (hit.handle.type === 'width') return 'ew-resize';
+      return 'nwse-resize';
+    }
+    return hitLayer(p) ? 'move' : 'default';
+  }
+
+  els.canvas.addEventListener('pointerdown', (e) => {
+    if (!state.image) return;
+    const p = toCanvasPoint(e);
+    const handleHit = hitHandle(p);
+
+    if (handleHit) {
+      const { layer, handle } = handleHit;
+      state.drag = {
+        mode: handle.type,
+        layer,
+        startDist: Math.max(1, Math.hypot(p.x - layer.x, p.y - layer.y)),
+        startFont: layer.fontSize,
+        startWidth: layer.width,
+        startStroke: layer.strokeWidth,
+        angleOffset: layer.rotation - pointerAngle(layer, p),
+      };
+    } else {
+      const layer = hitLayer(p);
+      if (layer) {
+        // Bring the grabbed layer to the front.
+        state.layers = state.layers.filter((l) => l !== layer).concat(layer);
+        select(layer.id);
+        state.drag = { mode: 'move', layer, dx: p.x - layer.x, dy: p.y - layer.y };
+      } else {
+        select(null);
+        return;
+      }
+    }
+
+    els.canvas.setPointerCapture(e.pointerId);
+    els.canvas.focus({ preventScroll: true });
+    e.preventDefault();
+  });
+
+  els.canvas.addEventListener('pointermove', (e) => {
+    if (!state.image) return;
+    const p = toCanvasPoint(e);
+    const drag = state.drag;
+    if (!drag) {
+      els.canvas.style.cursor = cursorFor(p);
+      return;
+    }
+
+    const { layer } = drag;
+    if (drag.mode === 'move') {
+      layer.x = clamp(p.x - drag.dx, 0, els.canvas.width);
+      layer.y = clamp(p.y - drag.dy, 0, els.canvas.height);
+    } else if (drag.mode === 'scale') {
+      const ratio = Math.hypot(p.x - layer.x, p.y - layer.y) / drag.startDist;
+      layer.fontSize = clamp(Math.round(drag.startFont * ratio), 8, 1000);
+      layer.width = Math.max(20, drag.startWidth * ratio);
+      layer.strokeWidth = Math.round(drag.startStroke * ratio * 2) / 2;
+    } else if (drag.mode === 'width') {
+      const local = toLocal(layer, p);
+      layer.width = Math.max(layer.fontSize, 2 * (Math.abs(local.x) - BOX_PAD * screenScale()));
+    } else if (drag.mode === 'rotate') {
+      let deg = pointerAngle(layer, p) + drag.angleOffset;
+      deg = ((deg + 540) % 360) - 180;
+      if (e.shiftKey) deg = Math.round(deg / 15) * 15;
+      else if (Math.abs(deg) < 3) deg = 0;
+      layer.rotation = Math.round(deg);
+      els.canvas.style.cursor = 'grabbing';
+    }
+    syncProps();
+    requestRender();
+  });
+
+  const endDrag = (e) => {
+    if (!state.drag) return;
+    state.drag = null;
+    if (els.canvas.hasPointerCapture(e.pointerId)) els.canvas.releasePointerCapture(e.pointerId);
+    els.canvas.style.cursor = cursorFor(toCanvasPoint(e));
+  };
+  els.canvas.addEventListener('pointerup', endDrag);
+  els.canvas.addEventListener('pointercancel', endDrag);
+
+  els.canvas.addEventListener('dblclick', (e) => {
+    const layer = hitLayer(toCanvasPoint(e));
+    if (!layer) return;
+    select(layer.id);
+    els.propText.focus();
+    els.propText.select();
+  });
+
+  /* ---------------------------------------------------------------- */
+  /* Keyboard                                                          */
+  /* ---------------------------------------------------------------- */
+
+  function isTyping(target) {
+    return target instanceof HTMLElement &&
+      (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName));
+  }
+
+  window.addEventListener('keydown', (e) => {
+    if (isTyping(e.target)) return;
+    const layer = selectedLayer();
+    if (!layer) return;
+
+    const step = (e.shiftKey ? 10 : 1) * screenScale();
+    const moves = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] };
+
+    if (moves[e.key]) {
+      layer.x += moves[e.key][0];
+      layer.y += moves[e.key][1];
+      requestRender();
+    } else if (e.key === 'Delete' || e.key === 'Backspace') {
+      removeSelected();
+    } else if (e.key === 'Escape') {
+      select(null);
+    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd') {
+      duplicateSelected();
+    } else {
+      return;
+    }
+    e.preventDefault();
+  });
+
+  /* ---------------------------------------------------------------- */
+  /* Export                                                            */
+  /* ---------------------------------------------------------------- */
+
+  function exportBlob() {
+    const out = document.createElement('canvas');
+    out.width = els.canvas.width;
+    out.height = els.canvas.height;
+    drawScene(out.getContext('2d'), false);
+    return new Promise((resolve, reject) => {
+      out.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('Export failed'))), 'image/png');
+    });
+  }
+
+  function fileName() {
+    const slug = state.imageName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    return `${slug || 'meme'}.png`;
+  }
+
+  els.downloadBtn.addEventListener('click', async () => {
+    try {
+      const blob = await exportBlob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName();
+      document.body.append(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      showToast('Downloaded!');
+    } catch (err) {
+      console.error(err);
+      showToast('Could not export this image.');
+    }
+  });
+
+  els.copyBtn.addEventListener('click', async () => {
+    if (!navigator.clipboard?.write || typeof ClipboardItem === 'undefined') {
+      showToast('Copying images is not supported in this browser. Use Download instead.');
+      return;
+    }
+    try {
+      // Passing the promise keeps Safari's user-gesture requirement happy.
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': exportBlob() })]);
+      showToast('Copied to clipboard!');
+    } catch (err) {
+      console.error(err);
+      showToast('Could not copy. Use Download instead.');
+    }
+  });
+
+  const canShareFiles = (() => {
+    try {
+      return !!navigator.canShare &&
+        navigator.canShare({ files: [new File([''], 'x.png', { type: 'image/png' })] });
+    } catch {
+      return false;
+    }
+  })();
+  els.shareBtn.hidden = !canShareFiles;
+
+  els.shareBtn.addEventListener('click', async () => {
+    try {
+      const blob = await exportBlob();
+      await navigator.share({ files: [new File([blob], fileName(), { type: 'image/png' })] });
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        console.error(err);
+        showToast('Could not share this image.');
+      }
+    }
+  });
+
+  /* ---------------------------------------------------------------- */
+  /* Helpers                                                           */
+  /* ---------------------------------------------------------------- */
+
+  function showToast(message) {
+    clearTimeout(toastTimer);
+    els.toast.textContent = message;
+    if (message) toastTimer = setTimeout(() => { els.toast.textContent = ''; }, 3500);
+  }
+
+  function toRad(deg) { return deg * Math.PI / 180; }
+  function clamp(v, min, max) { return Math.min(max, Math.max(min, v)); }
+
+  window.addEventListener('resize', requestRender);
+  document.fonts?.ready.then(requestRender);
+  ensureFont('Impact, Anton, sans-serif');
+
+  syncProps();
+  loadTemplates();
+})();

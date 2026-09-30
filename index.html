@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Meme Maker</title>
+  <meta name="description" content="Search meme templates or upload your own picture, add text, and download your meme.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bangers&family=Oswald:wght@600&family=Permanent+Marker&family=Roboto:wght@900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1 class="brand">Meme<span>Maker</span></h1>
+    <nav class="tabs" role="tablist">
+      <button class="tab is-active" role="tab" aria-selected="true" data-tab="search">Search memes</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="upload">Upload picture</button>
+    </nav>
+  </header>
+
+  <main class="layout">
+    <!-- Image sources -->
+    <section class="panel source">
+      <div class="tab-panel is-active" data-panel="search">
+        <div class="search-row">
+          <input id="searchInput" type="search" placeholder="Search templates, e.g. drake, distracted, cat" autocomplete="off">
+        </div>
+        <p id="searchStatus" class="muted small" aria-live="polite">Loading popular templates…</p>
+        <div id="templateGrid" class="template-grid"></div>
+      </div>
+
+      <div class="tab-panel" data-panel="upload">
+        <label id="dropZone" class="drop-zone" for="fileInput">
+          <input id="fileInput" type="file" accept="image/*" hidden>
+          <strong>Click to choose a picture</strong>
+          <span class="muted">or drag and drop it here</span>
+          <span class="muted small">You can also paste an image with Ctrl+V / Cmd+V</span>
+        </label>
+        <p class="muted small">Your picture never leaves your device.</p>
+      </div>
+    </section>
+
+    <!-- Canvas -->
+    <section class="panel stage-panel">
+      <div id="stage" class="stage">
+        <div id="emptyState" class="empty-state">
+          <p><strong>Pick a template</strong> or <strong>upload a picture</strong> to start.</p>
+        </div>
+        <canvas id="canvas" hidden></canvas>
+      </div>
+      <div class="stage-actions">
+        <button id="addTextBtn" class="btn" disabled>+ Add text</button>
+        <span class="spacer"></span>
+        <button id="copyBtn" class="btn" disabled>Copy</button>
+        <button id="shareBtn" class="btn" disabled hidden>Share</button>
+        <button id="downloadBtn" class="btn btn-primary" disabled>Download PNG</button>
+      </div>
+      <p id="toast" class="toast" role="status" aria-live="polite"></p>
+    </section>
+
+    <!-- Text properties -->
+    <aside class="panel props">
+      <h2>Text</h2>
+      <ul id="layerList" class="layer-list"></ul>
+      <p id="noSelection" class="muted small">Select a text box on the image to edit it.</p>
+
+      <form id="propsForm" class="props-form" hidden onsubmit="return false">
+        <label class="field">
+          <span>Text</span>
+          <textarea id="propText" rows="3"></textarea>
+        </label>
+
+        <label class="field">
+          <span>Font</span>
+          <select id="propFont">
+            <option value="Impact, Anton, sans-serif">Impact</option>
+            <option value="Anton, Impact, sans-serif">Anton</option>
+            <option value="'Arial Black', 'Roboto', sans-serif">Arial Black</option>
+            <option value="Oswald, sans-serif">Oswald</option>
+            <option value="Bangers, cursive">Bangers</option>
+            <option value="'Permanent Marker', cursive">Permanent Marker</option>
+            <option value="'Comic Sans MS', 'Comic Sans', cursive">Comic Sans</option>
+            <option value="Georgia, serif">Georgia</option>
+          </select>
+        </label>
+
+        <div class="field-row">
+          <label class="field">
+            <span>Size <output id="propSizeOut"></output></span>
+            <input id="propSize" type="range" min="8" max="300" step="1">
+          </label>
+          <label class="field">
+            <span>Rotate <output id="propRotateOut"></output></span>
+            <input id="propRotate" type="range" min="-180" max="180" step="1">
+          </label>
+        </div>
+
+        <div class="field-row">
+          <label class="field color-field">
+            <span>Fill</span>
+            <input id="propFill" type="color">
+          </label>
+          <label class="field color-field">
+            <span>Outline</span>
+            <input id="propStroke" type="color">
+          </label>
+          <label class="field">
+            <span>Outline width <output id="propStrokeWidthOut"></output></span>
+            <input id="propStrokeWidth" type="range" min="0" max="20" step="0.5">
+          </label>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <span>Align</span>
+            <div class="segmented" id="propAlign">
+              <button type="button" data-align="left">Left</button>
+              <button type="button" data-align="center">Center</button>
+              <button type="button" data-align="right">Right</button>
+            </div>
+          </div>
+          <label class="field check">
+            <input id="propUpper" type="checkbox">
+            <span>ALL CAPS</span>
+          </label>
+        </div>
+
+        <div class="field-row">
+          <button type="button" id="duplicateBtn" class="btn">Duplicate</button>
+          <button type="button" id="deleteBtn" class="btn btn-danger">Delete</button>
+        </div>
+        <p class="muted small">Tip: drag to move, drag the corner dot to resize, the side dots to change wrap width, and the top dot to rotate (hold Shift to snap). Arrow keys nudge, Delete removes.</p>
+      </form>
+    </aside>
+  </main>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
