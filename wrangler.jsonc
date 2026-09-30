@@ -1,0 +1,8 @@
+{
+  // Static site: Cloudflare serves the files in this folder as-is, no Worker code.
+  "name": "meme-maker",
+  "compatibility_date": "2025-09-01",
+  "assets": {
+    "directory": "./"
+  }
+}
