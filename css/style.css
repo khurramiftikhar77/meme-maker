@@ -101,7 +101,15 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .tab-panel { display: none; }
 .tab-panel.is-active { display: block; }
 
+.search-row {
+  display: flex;
+  gap: 6px;
+}
+.search-row input { flex: 1; min-width: 0; }
+.search-row select { flex: 0 0 auto; width: auto; }
+
 .search-row input,
+.search-row select,
 .field textarea,
 .field select {
   width: 100%;
@@ -111,6 +119,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   padding: 8px 10px;
 }
 .search-row input:focus,
+.search-row select:focus,
 .field textarea:focus,
 .field select:focus {
   outline: 2px solid var(--accent);

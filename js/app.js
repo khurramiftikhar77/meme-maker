@@ -2,6 +2,11 @@
   'use strict';
 
   const IMGFLIP_API = 'https://api.imgflip.com/get_memes';
+  const MEMEGEN_API = 'https://api.memegen.link/templates';
+  const REDDIT_API = 'https://www.reddit.com/r/MemeTemplatesOfficial/top.json?t=all&limit=100&raw_json=1';
+  const REDDIT_PAGES = 5;
+  // CORS-enabled image proxy, used when a host does not allow canvas export.
+  const IMAGE_PROXY = 'https://images.weserv.nl/?url=';
   const MAX_UPLOAD_SIDE = 2400;
   const HANDLE_RADIUS = 7;   // screen px
   const HANDLE_HIT = 14;     // screen px
@@ -15,6 +20,7 @@
     tabs: document.querySelectorAll('.tab'),
     panels: document.querySelectorAll('.tab-panel'),
     searchInput: $('#searchInput'),
+    sourceFilter: $('#sourceFilter'),
     searchStatus: $('#searchStatus'),
     templateGrid: $('#templateGrid'),
     fileInput: $('#fileInput'),
@@ -80,42 +86,128 @@
   /* Template search (Imgflip)                                         */
   /* ---------------------------------------------------------------- */
 
-  async function loadTemplates() {
-    els.searchStatus.textContent = 'Loading popular templates…';
-    try {
-      const res = await fetch(IMGFLIP_API);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = await res.json();
+  // Each loader resolves to [{ id, name, url, thumb, boxes, source, search }].
+  const SOURCES = {
+    imgflip: async () => {
+      const json = await fetchJson(IMGFLIP_API);
       if (!json.success) throw new Error('Imgflip returned an error');
-      state.templates = json.data.memes;
+      return json.data.memes.map((t) => ({
+        id: `imgflip-${t.id}`,
+        name: t.name,
+        url: t.url,
+        thumb: t.url,
+        boxes: t.box_count || 2,
+      }));
+    },
+
+    memegen: async () => {
+      const list = await fetchJson(MEMEGEN_API);
+      return list.filter((t) => t.blank).map((t) => ({
+        id: `memegen-${t.id}`,
+        name: t.name,
+        url: t.blank,
+        thumb: `${t.blank}${t.blank.includes('?') ? '&' : '?'}width=240`,
+        boxes: t.lines || 2,
+        keywords: (t.keywords || []).join(' '),
+      }));
+    },
+
+    reddit: async () => {
+      const out = [];
+      let after = '';
+      for (let page = 0; page < REDDIT_PAGES; page++) {
+        const json = await fetchJson(`${REDDIT_API}${after ? `&after=${after}` : ''}`);
+        json.data.children.forEach(({ data: post }) => {
+          if (post.over_18 || !/\.(jpe?g|png|webp)$/i.test(post.url || '')) return;
+          const resolutions = post.preview?.images?.[0]?.resolutions || [];
+          const thumb = (resolutions.find((r) => r.width >= 216) || resolutions[resolutions.length - 1])?.url;
+          out.push({
+            id: `reddit-${post.id}`,
+            name: cleanRedditTitle(post.title),
+            url: post.url,
+            thumb: thumb || post.url,
+            boxes: 2,
+          });
+        });
+        after = json.data.after;
+        if (!after) break;
+      }
+      return out;
+    },
+  };
+
+  async function fetchJson(url) {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status} from ${new URL(url).host}`);
+    return res.json();
+  }
+
+  function cleanRedditTitle(title) {
+    return title
+      .replace(/\[[^\]]*\]|\([^)]*template[^)]*\)/gi, '')
+      .replace(/\btemplates?\b/gi, '')
+      .replace(/\s+/g, ' ')
+      .replace(/^[\s\-:|]+|[\s\-:|]+$/g, '') || 'Untitled template';
+  }
+
+  function nameKey(name) {
+    return name.toLowerCase().replace(/[^a-z0-9]/g, '');
+  }
+
+  const sourceStatus = {};
+
+  // Load every source in parallel and show templates as each one arrives.
+  function loadTemplates() {
+    state.templates = [];
+    const seen = new Set();
+    els.searchStatus.textContent = 'Loading templates…';
+
+    const order = Object.keys(SOURCES);
+    const results = {};
+
+    const merge = () => {
+      state.templates = [];
+      seen.clear();
+      // Keep source priority stable no matter which request finishes first.
+      order.forEach((source) => (results[source] || []).forEach((t) => {
+        const key = nameKey(t.name);
+        if (key && seen.has(key)) return;
+        seen.add(key);
+        state.templates.push({ ...t, source, search: `${t.name} ${t.keywords || ''}`.toLowerCase() });
+      }));
       renderTemplates();
-    } catch (err) {
-      els.searchStatus.innerHTML = '';
-      els.searchStatus.append('Could not load templates. ');
-      const retry = document.createElement('button');
-      retry.className = 'btn';
-      retry.textContent = 'Retry';
-      retry.addEventListener('click', loadTemplates);
-      els.searchStatus.append(retry);
-      console.error(err);
-    }
+    };
+
+    order.forEach((source) => {
+      sourceStatus[source] = 'loading';
+      SOURCES[source]()
+        .then((list) => {
+          results[source] = list;
+          sourceStatus[source] = 'ok';
+        })
+        .catch((err) => {
+          sourceStatus[source] = 'failed';
+          console.error(`Could not load ${source} templates`, err);
+        })
+        .finally(merge);
+    });
   }
 
   function renderTemplates() {
     const terms = els.searchInput.value.toLowerCase().split(/\s+/).filter(Boolean);
-    const matches = state.templates.filter((t) => {
-      const name = t.name.toLowerCase();
-      return terms.every((term) => name.includes(term));
-    });
+    const source = els.sourceFilter.value;
+    const matches = state.templates.filter((t) =>
+      (source === 'all' || t.source === source) && terms.every((term) => t.search.includes(term)));
 
     els.templateGrid.replaceChildren(...matches.map((t) => {
       const btn = document.createElement('button');
       btn.className = 'template';
       btn.title = t.name;
       const img = document.createElement('img');
-      img.src = t.url;
+      img.src = t.thumb;
       img.alt = t.name;
       img.loading = 'lazy';
+      img.referrerPolicy = 'no-referrer';
       const label = document.createElement('span');
       label.textContent = t.name;
       btn.append(img, label);
@@ -123,35 +215,61 @@
       return btn;
     }));
 
-    if (!state.templates.length) return;
-    els.searchStatus.textContent = terms.length
-      ? `${matches.length} template${matches.length === 1 ? '' : 's'} match "${els.searchInput.value.trim()}"`
-      : `${state.templates.length} popular templates`;
+    renderSearchStatus(terms, matches.length);
+  }
+
+  function renderSearchStatus(terms, matchCount) {
+    const loading = Object.values(sourceStatus).includes('loading');
+    const failed = Object.keys(sourceStatus).filter((k) => sourceStatus[k] === 'failed');
+
+    els.searchStatus.replaceChildren();
+    let text;
+    if (!state.templates.length) {
+      text = loading ? 'Loading templates…' : 'Could not load templates. ';
+    } else if (terms.length || els.sourceFilter.value !== 'all') {
+      text = `${matchCount} of ${state.templates.length} templates match`;
+    } else {
+      text = `${state.templates.length} templates${loading ? ' (loading more…)' : ''}`;
+    }
+    if (failed.length && !loading) text += ` (${failed.join(', ')} unavailable) `;
+    els.searchStatus.append(text);
+
+    if (failed.length && !loading) {
+      const retry = document.createElement('button');
+      retry.className = 'btn';
+      retry.textContent = 'Retry';
+      retry.addEventListener('click', loadTemplates);
+      els.searchStatus.append(retry);
+    }
   }
 
   els.searchInput.addEventListener('input', renderTemplates);
+  els.sourceFilter.addEventListener('change', renderTemplates);
 
   function loadTemplate(t) {
     showToast('Loading template…');
     loadRemoteImage(t.url)
       .then(({ img, exportable }) => {
-        setImage(img, t.name, exportable, t.box_count || 2);
+        setImage(img, t.name, exportable, t.boxes);
         showToast(exportable ? '' : 'This image blocks downloads from other sites. Try another template.');
       })
       .catch(() => showToast('Could not load that image.'));
   }
 
+  // Prefer a direct CORS load, then the proxy, and finally a display-only load.
   function loadRemoteImage(url) {
-    const load = (withCors) => new Promise((resolve, reject) => {
+    const load = (src, withCors) => new Promise((resolve, reject) => {
       const img = new Image();
       if (withCors) img.crossOrigin = 'anonymous';
+      img.referrerPolicy = 'no-referrer';
       img.onload = () => resolve(img);
       img.onerror = reject;
-      img.src = url;
+      img.src = src;
     });
-    return load(true)
+    return load(url, true)
+      .catch(() => load(`${IMAGE_PROXY}${encodeURIComponent(url)}`, true))
       .then((img) => ({ img, exportable: true }))
-      .catch(() => load(false).then((img) => ({ img, exportable: false })));
+      .catch(() => load(url, false).then((img) => ({ img, exportable: false })));
   }
 
   /* ---------------------------------------------------------------- */

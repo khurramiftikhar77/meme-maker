@@ -25,6 +25,12 @@
       <div class="tab-panel is-active" data-panel="search">
         <div class="search-row">
           <input id="searchInput" type="search" placeholder="Search templates, e.g. drake, distracted, cat" autocomplete="off">
+          <select id="sourceFilter" aria-label="Template source">
+            <option value="all">All sources</option>
+            <option value="imgflip">Imgflip</option>
+            <option value="memegen">Memegen</option>
+            <option value="reddit">Reddit</option>
+          </select>
         </div>
         <p id="searchStatus" class="muted small" aria-live="polite">Loading popular templates…</p>
         <div id="templateGrid" class="template-grid"></div>
