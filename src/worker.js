@@ -1,11 +1,94 @@
-// Serves the static meme maker and adds Google AdSense to its pages once configured.
+// Serves the static meme maker: renders template images into template pages, keeps the
+// workers.dev copy out of search results, and adds Google AdSense once configured.
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     if (url.pathname === '/ads.txt') return adsTxt(env);
-    return withAds(await env.ASSETS.fetch(request), env);
+
+    let response = await env.ASSETS.fetch(request);
+    if (!(response.headers.get('content-type') || '').includes('text/html')) return response;
+
+    if (url.pathname.startsWith('/templates/')) response = await withTemplateImage(response);
+    response = withAds(response, env);
+    if (url.hostname.endsWith('.workers.dev')) {
+      // Duplicate of the real domain: let people use it but keep it out of Google.
+      response = new Response(response.body, response);
+      response.headers.set('X-Robots-Tag', 'noindex');
+    }
+    return response;
   },
 };
+
+/* ------------------------------------------------------------------ */
+/* Template images                                                     */
+/* ------------------------------------------------------------------ */
+
+const IMAGE_SOURCES_TTL = 24 * 60 * 60;  // seconds
+let imageIndex = null;
+let imageIndexAt = 0;
+
+function nameKey(name) {
+  return String(name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+async function fetchJson(url) {
+  // Cloudflare caches the lists so most page views never call the sources.
+  const res = await fetch(url, { cf: { cacheTtl: IMAGE_SOURCES_TTL, cacheEverything: true } });
+  if (!res.ok) throw new Error(`HTTP ${res.status} from ${url}`);
+  return res.json();
+}
+
+// name key -> { url, width, height }, built from Imgflip (preferred) and Memegen.
+async function templateImages() {
+  if (imageIndex && Date.now() - imageIndexAt < IMAGE_SOURCES_TTL * 1000) return imageIndex;
+  const [imgflip, memegen] = await Promise.allSettled([
+    fetchJson('https://api.imgflip.com/get_memes'),
+    fetchJson('https://api.memegen.link/templates'),
+  ]);
+  const index = new Map();
+  if (memegen.status === 'fulfilled') {
+    memegen.value.forEach((t) => { if (t.blank) index.set(nameKey(t.name), { url: t.blank }); });
+  }
+  if (imgflip.status === 'fulfilled') {
+    imgflip.value.data.memes.forEach((t) => {
+      index.set(nameKey(t.name), { url: t.url, width: t.width, height: t.height });
+    });
+  }
+  if (index.size) {
+    imageIndex = index;
+    imageIndexAt = Date.now();
+  }
+  return index;
+}
+
+// Fill in the hero image on the server so search engines see a real <img src>.
+async function withTemplateImage(response) {
+  let index;
+  try {
+    index = await templateImages();
+  } catch (err) {
+    console.error('Template image lookup failed', err);
+    return response;  // js/template-page.js looks the image up in the browser instead
+  }
+  return new HTMLRewriter()
+    .on('img.template-hero', {
+      element(el) {
+        const names = (el.getAttribute('data-template-names') || '').split('|');
+        const match = names.map((n) => index.get(nameKey(n))).find(Boolean);
+        if (!match) return;
+        el.setAttribute('src', match.url);
+        if (match.width && match.height) {
+          el.setAttribute('width', String(match.width));
+          el.setAttribute('height', String(match.height));
+        }
+      },
+    })
+    .transform(response);
+}
+
+/* ------------------------------------------------------------------ */
+/* Google AdSense                                                      */
+/* ------------------------------------------------------------------ */
 
 // Ads stay off until ADSENSE_CLIENT (ca-pub-...) is set in the Worker's settings.
 function adsenseClient(env) {
@@ -25,8 +108,7 @@ function adsTxt(env) {
 // Add the AdSense tag to HTML pages server-side so Google's site check can see it.
 function withAds(response, env) {
   const client = adsenseClient(env);
-  const type = response.headers.get('content-type') || '';
-  if (!client || !type.includes('text/html')) return response;
+  if (!client) return response;
 
   const slot = (value) => (/^\d{6,20}$/.test(String(value || '').trim()) ? String(value).trim() : '');
   const config = {

@@ -180,6 +180,7 @@
         state.templates.push({ ...t, source, search: `${t.name} ${t.keywords || ''}`.toLowerCase() });
       }));
       renderTemplates();
+      openRequestedTemplate();
     };
 
     order.forEach((source) => {
@@ -249,6 +250,26 @@
 
   els.searchInput.addEventListener('input', renderTemplates);
   els.sourceFilter.addEventListener('change', renderTemplates);
+
+  // Template pages link to the editor as /?template=Name; open that template once it has loaded.
+  const requestedTemplate = new URLSearchParams(location.search).get('template');
+  let requestHandled = !requestedTemplate;
+
+  function openRequestedTemplate() {
+    if (requestHandled) return;
+    const builtIn = findBuiltIn(requestedTemplate);
+    const keys = new Set([requestedTemplate, ...(builtIn ? builtIn.names : [])].map(nameKey));
+    const match = state.templates.find((t) => keys.has(nameKey(t.name)));
+    if (match) {
+      requestHandled = true;
+      loadTemplate(match);
+    } else if (!Object.values(sourceStatus).includes('loading')) {
+      requestHandled = true;
+      showToast(`Could not find "${requestedTemplate}". Try searching for it.`);
+      els.searchInput.value = requestedTemplate;
+      renderTemplates();
+    }
+  }
 
   function loadTemplate(t) {
     showToast('Loading template…');

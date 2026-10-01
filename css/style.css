@@ -444,3 +444,55 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .page .updated { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
 .brand a { color: inherit; text-decoration: none; }
 .back-link { margin-left: auto; color: var(--accent); }
+
+/* Header links on content pages and the main page */
+.top-links { display: flex; align-items: center; gap: 14px; margin-left: auto; }
+.top-links a:not(.btn) { color: var(--text); }
+.top-links .btn { text-decoration: none; }
+.top-template-link { margin-left: auto; color: var(--muted); }
+.top-template-link:hover { color: var(--text); }
+
+/* Template pages */
+.breadcrumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+.breadcrumbs li + li::before { content: "›"; margin-right: 6px; }
+.byline { color: var(--muted); font-size: 14px; margin: 4px 0 16px; }
+
+/* Fixed box so the image loading in never shifts the page */
+.template-figure { margin: 0 0 12px; }
+.template-figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 70vh;
+  aspect-ratio: 4 / 3;
+  object-fit: contain;
+  background: var(--panel-2);
+  border-radius: var(--radius);
+}
+.template-figure figcaption { margin-top: 6px; }
+.make-btn { display: inline-block; text-decoration: none; }
+
+.caption-ideas li { margin-bottom: 6px; }
+.faq dt { font-weight: 700; margin-top: 14px; }
+.faq dd { margin: 4px 0 0; color: var(--text); }
+.site-footer .faq dd { color: var(--muted); }
+
+.related-links, .template-index, .home-template-links {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 6px 16px;
+}
+.home-template-links a, .footer-links a { color: var(--accent); }
+.home-template-links { font-size: 14px; }
+.page a.btn-primary { color: var(--accent-text); text-decoration: none; }

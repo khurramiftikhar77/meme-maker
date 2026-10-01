@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Meme Maker: Free Online Meme Generator</title>
-  <meta name="description" content="Free online meme generator. Search 500+ meme templates or upload your own picture, add and edit text, use ready-made caption ideas, and download your meme as a PNG.">
+  <meta name="description" content="Free online meme generator. Search 500+ templates or upload a picture, edit the text, use ready-made caption ideas and download your meme.">
   <link rel="canonical" href="https://mememaker.khurramiftikhar.com/">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Meme Maker: Free Online Meme Generator">
@@ -12,8 +12,11 @@
   <meta property="og:url" content="https://mememaker.khurramiftikhar.com/">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bangers&family=Oswald:wght@600&family=Permanent+Marker&family=Roboto:wght@900&display=swap" rel="stylesheet">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Anton&family=Bangers&family=Oswald:wght@600&family=Permanent+Marker&family=Roboto:wght@900&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Bangers&family=Oswald:wght@600&family=Permanent+Marker&family=Roboto:wght@900&display=swap"></noscript>
   <link rel="stylesheet" href="css/style.css">
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "Meme Maker", "url": "https://mememaker.khurramiftikhar.com/", "applicationCategory": "MultimediaApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "author": {"@type": "Person", "name": "Khurram Iftikhar", "url": "https://khurramiftikhar.com"}}</script>
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Is Meme Maker free?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Meme Maker is completely free, has no watermark and needs no account."}}, {"@type": "Question", "name": "How do I make a meme?", "acceptedAnswer": {"@type": "Answer", "text": "Search for a template or upload your own picture. Then click any text on the image to type your own caption, and click Download PNG when you are done."}}, {"@type": "Question", "name": "Can I use my own picture?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Open the Upload picture tab and choose, drag in or paste an image. It is edited on your device and never uploaded to our servers."}}, {"@type": "Question", "name": "How do I edit the text on a meme?", "acceptedAnswer": {"@type": "Answer", "text": "Click the text on the image and start typing. Drag it to move it, use the corner dot to resize it, the side dots to change how wide it wraps, and the round dot to rotate it. The Text panel changes the font, size, colours and outline."}}, {"@type": "Question", "name": "Where do the meme templates come from?", "acceptedAnswer": {"@type": "Answer", "text": "Templates come from Imgflip, Memegen and the r/MemeTemplatesOfficial community. They belong to their respective owners."}}, {"@type": "Question", "name": "Does it work on phones?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Meme Maker works in any modern browser on phones, tablets and computers."}}]}</script>
 </head>
 <body>
   <header class="topbar">
@@ -22,6 +25,7 @@
       <button class="tab is-active" role="tab" aria-selected="true" data-tab="search">Search memes</button>
       <button class="tab" role="tab" aria-selected="false" data-tab="upload">Upload picture</button>
     </nav>
+    <a class="top-template-link" href="/templates/">Meme templates</a>
   </header>
 
   <main class="layout">
@@ -59,7 +63,7 @@
         <div id="emptyState" class="empty-state">
           <p><strong>Pick a template</strong> or <strong>upload a picture</strong> to start.</p>
         </div>
-        <canvas id="canvas" hidden></canvas>
+        <canvas id="canvas" role="img" aria-label="Meme preview" hidden></canvas>
       </div>
       <div class="stage-actions">
         <button id="addTextBtn" class="btn" disabled>+ Add text</button>
@@ -163,7 +167,120 @@
       <p>Meme Maker lets you create memes in your browser in a few seconds. Search more than 500 popular meme templates, or upload your own picture, then click any text on the image to edit it. Every popular template comes with ready-made caption ideas, and general ideas are ready for any other picture. Change the font, size, colors and outline, move and rotate text, then download your meme as a PNG or copy it to share.</p>
       <p>Pictures you upload never leave your device.</p>
     </section>
+    <section class="site-about">
+      <h2>Popular meme templates</h2>
+      <!-- TEMPLATE-LINKS:START -->
+      <ul class="home-template-links">
+        <li><a href="/templates/drake-hotline-bling">Drake Hotline Bling</a></li>
+        <li><a href="/templates/two-buttons">Two Buttons</a></li>
+        <li><a href="/templates/distracted-boyfriend">Distracted Boyfriend</a></li>
+        <li><a href="/templates/uno-draw-25-cards">UNO Draw 25 Cards</a></li>
+        <li><a href="/templates/left-exit-12-off-ramp">Left Exit 12 Off Ramp</a></li>
+        <li><a href="/templates/bernie-i-am-once-again-asking-for-your-support">Bernie I Am Once Again Asking For Your Support</a></li>
+        <li><a href="/templates/change-my-mind">Change My Mind</a></li>
+        <li><a href="/templates/grus-plan">Gru's Plan</a></li>
+        <li><a href="/templates/batman-slapping-robin">Batman Slapping Robin</a></li>
+        <li><a href="/templates/waiting-skeleton">Waiting Skeleton</a></li>
+        <li><a href="/templates/disaster-girl">Disaster Girl</a></li>
+        <li><a href="/templates/woman-yelling-at-cat">Woman Yelling At Cat</a></li>
+        <li><a href="/templates/expanding-brain">Expanding Brain</a></li>
+        <li><a href="/templates/always-has-been">Always Has Been</a></li>
+        <li><a href="/templates/buff-doge-vs-cheems">Buff Doge vs. Cheems</a></li>
+        <li><a href="/templates/sad-pablo-escobar">Sad Pablo Escobar</a></li>
+        <li><a href="/templates/tuxedo-winnie-the-pooh">Tuxedo Winnie The Pooh</a></li>
+        <li><a href="/templates/epic-handshake">Epic Handshake</a></li>
+        <li><a href="/templates/monkey-puppet">Monkey Puppet</a></li>
+        <li><a href="/templates/anakin-padme-4-panel">Anakin Padme 4 Panel</a></li>
+        <li><a href="/templates/hide-the-pain-harold">Hide the Pain Harold</a></li>
+        <li><a href="/templates/mocking-spongebob">Mocking Spongebob</a></li>
+        <li><a href="/templates/roll-safe-think-about-it">Roll Safe Think About It</a></li>
+        <li><a href="/templates/is-this-a-pigeon">Is This A Pigeon</a></li>
+        <li><a href="/templates/trade-offer">Trade Offer</a></li>
+        <li><a href="/templates/x-x-everywhere">X, X Everywhere</a></li>
+        <li><a href="/templates/yall-got-any-more-of-that">Y'all Got Any More Of That</a></li>
+        <li><a href="/templates/one-does-not-simply">One Does Not Simply</a></li>
+        <li><a href="/templates/ancient-aliens">Ancient Aliens</a></li>
+        <li><a href="/templates/futurama-fry">Futurama Fry</a></li>
+        <li><a href="/templates/clown-applying-makeup">Clown Applying Makeup</a></li>
+        <li><a href="/templates/this-is-fine">This Is Fine</a></li>
+        <li><a href="/templates/panik-kalm-panik">Panik Kalm Panik</a></li>
+        <li><a href="/templates/leonardo-dicaprio-cheers">Leonardo Dicaprio Cheers</a></li>
+        <li><a href="/templates/oprah-you-get-a">Oprah You Get A</a></li>
+        <li><a href="/templates/evil-kermit">Evil Kermit</a></li>
+        <li><a href="/templates/hard-to-swallow-pills">Hard To Swallow Pills</a></li>
+        <li><a href="/templates/surprised-pikachu">Surprised Pikachu</a></li>
+        <li><a href="/templates/spongebob-ight-imma-head-out">Spongebob Ight Imma Head Out</a></li>
+        <li><a href="/templates/laughing-leo">Laughing Leo</a></li>
+        <li><a href="/templates/who-would-win">Who Would Win?</a></li>
+        <li><a href="/templates/sleeping-shaq">Sleeping Shaq</a></li>
+        <li><a href="/templates/success-kid">Success Kid</a></li>
+        <li><a href="/templates/brace-yourselves-x-is-coming">Brace Yourselves X is Coming</a></li>
+        <li><a href="/templates/grandma-finds-the-internet">Grandma Finds The Internet</a></li>
+        <li><a href="/templates/matrix-morpheus">Matrix Morpheus</a></li>
+        <li><a href="/templates/bad-luck-brian">Bad Luck Brian</a></li>
+        <li><a href="/templates/first-world-problems">First World Problems</a></li>
+        <li><a href="/templates/captain-picard-facepalm">Captain Picard Facepalm</a></li>
+        <li><a href="/templates/jack-sparrow-being-chased">Jack Sparrow Being Chased</a></li>
+        <li><a href="/templates/car-salesman-slaps-roof-of-car">Car Salesman Slaps Roof Of Car</a></li>
+        <li><a href="/templates/guy-holding-cardboard-sign">Guy Holding Cardboard Sign</a></li>
+        <li><a href="/templates/lisa-simpsons-presentation">Lisa Simpson's Presentation</a></li>
+        <li><a href="/templates/megamind-peeking">Megamind peeking</a></li>
+        <li><a href="/templates/two-guys-on-a-bus">Two guys on a bus</a></li>
+        <li><a href="/templates/scroll-of-truth">Scroll Of Truth</a></li>
+        <li><a href="/templates/blank-nut-button">Blank Nut Button</a></li>
+        <li><a href="/templates/but-thats-none-of-my-business">But That's None Of My Business</a></li>
+        <li><a href="/templates/unsettled-tom">Unsettled Tom</a></li>
+        <li><a href="/templates/i-bet-hes-thinking-about-other-women">I Bet He's Thinking About Other Women</a></li>
+        <li><a href="/templates/afraid-to-ask-andy">Afraid To Ask Andy</a></li>
+        <li><a href="/templates/grumpy-cat">Grumpy Cat</a></li>
+        <li><a href="/templates/yo-dawg-heard-you">Yo Dawg Heard You</a></li>
+        <li><a href="/templates/mugatu-so-hot-right-now">Mugatu So Hot Right Now</a></li>
+        <li><a href="/templates/put-it-somewhere-else-patrick">Put It Somewhere Else Patrick</a></li>
+        <li><a href="/templates/arthur-fist">Arthur Fist</a></li>
+        <li><a href="/templates/creepy-condescending-wonka">Creepy Condescending Wonka</a></li>
+        <li><a href="/templates/uncle-sam">Uncle Sam</a></li>
+        <li><a href="/templates/dr-evil-laser">Dr Evil Laser</a></li>
+        <li><a href="/templates/aaaaand-its-gone">Aaaaand Its Gone</a></li>
+        <li><a href="/templates/mr-krabs-blur-meme">Mr Krabs Blur Meme</a></li>
+        <li><a href="/templates/theyre-the-same-picture">They're The Same Picture</a></li>
+        <li><a href="/templates/look-at-me">Look At Me</a></li>
+        <li><a href="/templates/star-wars-yoda">Star Wars Yoda</a></li>
+        <li><a href="/templates/philosoraptor">Philosoraptor</a></li>
+        <li><a href="/templates/third-world-skeptical-kid">Third World Skeptical Kid</a></li>
+        <li><a href="/templates/inhaling-seagull">Inhaling Seagull</a></li>
+        <li><a href="/templates/spider-man-triple">Spider Man Triple</a></li>
+        <li><a href="/templates/mother-ignoring-kid-drowning-in-a-pool">Mother Ignoring Kid Drowning In A Pool</a></li>
+        <li><a href="/templates/soldier-protecting-sleeping-child">Soldier protecting sleeping child</a></li>
+        <li><a href="/templates/gus-fring-we-are-not-the-same">Gus Fring we are not the same</a></li>
+        <li><a href="/templates/average-fan-vs-average-enjoyer">Average Fan vs Average Enjoyer</a></li>
+        <li><a href="/templates/who-killed-hannibal">Who Killed Hannibal</a></li>
+        <li><a href="/templates/american-chopper-argument">American Chopper Argument</a></li>
+        <li><a href="/templates/finding-neverland">Finding Neverland</a></li>
+        <li><a href="/templates/boardroom-meeting-suggestion">Boardroom Meeting Suggestion</a></li>
+        <li><a href="/templates/sad-keanu">Sad Keanu</a></li>
+      </ul>
+      <!-- TEMPLATE-LINKS:END -->
+      <p><a href="/templates/">See all meme templates with their meaning and caption ideas</a></p>
+    </section>
+    <section class="site-about">
+      <h2>Frequently asked questions</h2>
+      <dl class="faq">
+        <dt>Is Meme Maker free?</dt>
+        <dd>Yes. Meme Maker is completely free, has no watermark and needs no account.</dd>
+        <dt>How do I make a meme?</dt>
+        <dd>Search for a template or upload your own picture. Then click any text on the image to type your own caption, and click Download PNG when you are done.</dd>
+        <dt>Can I use my own picture?</dt>
+        <dd>Yes. Open the Upload picture tab and choose, drag in or paste an image. It is edited on your device and never uploaded to our servers.</dd>
+        <dt>How do I edit the text on a meme?</dt>
+        <dd>Click the text on the image and start typing. Drag it to move it, use the corner dot to resize it, the side dots to change how wide it wraps, and the round dot to rotate it. The Text panel changes the font, size, colours and outline.</dd>
+        <dt>Where do the meme templates come from?</dt>
+        <dd>Templates come from Imgflip, Memegen and the r/MemeTemplatesOfficial community. They belong to their respective owners.</dd>
+        <dt>Does it work on phones?</dt>
+        <dd>Yes. Meme Maker works in any modern browser on phones, tablets and computers.</dd>
+      </dl>
+    </section>
     <nav class="footer-links" aria-label="Site">
+      <a href="/templates/">Meme templates</a>
       <a href="/about">About</a>
       <a href="/privacy">Privacy Policy</a>
       <a href="/terms">Terms of Use</a>
