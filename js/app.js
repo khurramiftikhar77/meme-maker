@@ -67,6 +67,7 @@
     layers: [],
     selectedId: null,
     drag: null,
+    editingId: null,    // layer being typed into directly on the image
     templates: [],
   };
 
@@ -427,6 +428,7 @@
   }
 
   function select(id) {
+    if (state.editingId !== null && state.editingId !== id) stopEditing();
     state.selectedId = id;
     syncProps();
     renderLayerList();
@@ -436,6 +438,7 @@
   function removeSelected() {
     const layer = selectedLayer();
     if (!layer) return;
+    if (state.editingId === layer.id) stopEditing();
     state.layers = state.layers.filter((l) => l !== layer);
     select(state.layers.length ? state.layers[state.layers.length - 1].id : null);
   }
@@ -520,9 +523,7 @@
   });
 
   els.addTextBtn.addEventListener('click', () => {
-    addLayer();
-    els.propText.focus();
-    els.propText.select();
+    startEditing(addLayer(), { selectAll: true });
   });
   els.duplicateBtn.addEventListener('click', duplicateSelected);
   els.deleteBtn.addEventListener('click', removeSelected);
@@ -549,7 +550,9 @@
     const { width: W, height: H } = c.canvas;
     c.clearRect(0, 0, W, H);
     c.drawImage(state.image, 0, 0, W, H);
-    state.layers.forEach((layer) => drawLayer(c, layer));
+    state.layers.forEach((layer) => {
+      if (!(withOverlay && layer.id === state.editingId)) drawLayer(c, layer);
+    });
     if (withOverlay) {
       const layer = selectedLayer();
       if (layer) drawSelection(c, layer);
@@ -745,6 +748,7 @@
 
   els.canvas.addEventListener('pointerdown', (e) => {
     if (!state.image) return;
+    if (state.editingId !== null) stopEditing();
     const p = toCanvasPoint(e);
     const handleHit = hitHandle(p);
 
@@ -763,9 +767,13 @@
       const layer = hitLayer(p);
       if (layer) {
         // Bring the grabbed layer to the front.
+        const wasSelected = layer.id === state.selectedId;
         state.layers = state.layers.filter((l) => l !== layer).concat(layer);
         select(layer.id);
-        state.drag = { mode: 'move', layer, dx: p.x - layer.x, dy: p.y - layer.y };
+        state.drag = {
+          mode: 'move', layer, dx: p.x - layer.x, dy: p.y - layer.y,
+          wasSelected, startX: e.clientX, startY: e.clientY,
+        };
       } else {
         select(null);
         return;
@@ -811,21 +819,115 @@
   });
 
   const endDrag = (e) => {
-    if (!state.drag) return;
+    const drag = state.drag;
+    if (!drag) return;
     state.drag = null;
     if (els.canvas.hasPointerCapture(e.pointerId)) els.canvas.releasePointerCapture(e.pointerId);
     els.canvas.style.cursor = cursorFor(toCanvasPoint(e));
+
+    const moved = drag.mode === 'move' && Math.hypot(e.clientX - drag.startX, e.clientY - drag.startY) > 4;
+    if (e.type === 'pointerup' && drag.mode === 'move' && drag.wasSelected && !moved) {
+      startEditing(drag.layer);
+    }
   };
   els.canvas.addEventListener('pointerup', endDrag);
   els.canvas.addEventListener('pointercancel', endDrag);
 
   els.canvas.addEventListener('dblclick', (e) => {
     const layer = hitLayer(toCanvasPoint(e));
-    if (!layer) return;
-    select(layer.id);
-    els.propText.focus();
-    els.propText.select();
+    if (layer) startEditing(layer, { selectAll: true });
   });
+
+  /* ---------------------------------------------------------------- */
+  /* Typing directly on the image                                      */
+  /* ---------------------------------------------------------------- */
+
+  const editor = document.createElement('textarea');
+  editor.className = 'text-editor';
+  editor.spellcheck = false;
+  editor.setAttribute('aria-label', 'Edit meme text');
+  els.canvas.parentElement.append(editor);
+  editor.hidden = true;
+
+  function startEditing(layer, { selectAll = false, append = '', backspace = false } = {}) {
+    if (state.editingId !== layer.id) {
+      if (state.editingId !== null) stopEditing();
+      if (state.selectedId !== layer.id) select(layer.id);
+      state.editingId = layer.id;
+      editor.value = layer.text;
+      editor.hidden = false;
+    }
+    if (append) editor.value += append;
+    if (backspace) editor.value = editor.value.slice(0, -1);
+    if (append || backspace) updateFromEditor();
+    positionEditor();
+    editor.focus({ preventScroll: true });
+    if (selectAll) editor.select();
+    else editor.setSelectionRange(editor.value.length, editor.value.length);
+    requestRender();
+  }
+
+  function stopEditing() {
+    if (state.editingId === null) return;
+    state.editingId = null;
+    editor.hidden = true;
+    editor.blur();
+    renderLayerList();
+    requestRender();
+  }
+
+  function updateFromEditor() {
+    const layer = state.layers.find((l) => l.id === state.editingId);
+    if (!layer) return;
+    layer.text = editor.value;
+    syncProps();
+    renderLayerList();
+    positionEditor();
+  }
+
+  // Lay the editor over the text box so typing looks like the final meme.
+  function positionEditor() {
+    const layer = state.layers.find((l) => l.id === state.editingId);
+    if (!layer) return;
+    const rect = els.canvas.getBoundingClientRect();
+    const host = els.canvas.parentElement.getBoundingClientRect();
+    const k = rect.width / els.canvas.width;
+    const { height } = layout(ctx, { ...layer, text: editor.value || ' ' });
+    const w = layer.width * k;
+    const h = Math.max(height, layer.fontSize * LINE_HEIGHT) * k;
+    const outline = Math.max(0, layer.strokeWidth * k);
+
+    Object.assign(editor.style, {
+      left: `${rect.left - host.left + layer.x * k - w / 2}px`,
+      top: `${rect.top - host.top + layer.y * k - h / 2}px`,
+      width: `${w}px`,
+      height: `${h}px`,
+      transform: `rotate(${layer.rotation}deg)`,
+      font: `${layer.fontSize * k}px/${LINE_HEIGHT} ${layer.fontFamily}`,
+      color: layer.fill,
+      textAlign: layer.align,
+      textTransform: layer.uppercase ? 'uppercase' : 'none',
+      webkitTextStroke: outline ? `${outline * 2}px ${layer.stroke}` : '0',
+      paintOrder: 'stroke fill',
+    });
+  }
+
+  editor.addEventListener('input', () => {
+    updateFromEditor();
+    requestRender();
+  });
+  editor.addEventListener('blur', () => {
+    // Clicking inside the editor's own text should not end editing.
+    setTimeout(() => { if (document.activeElement !== editor) stopEditing(); }, 0);
+  });
+  editor.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      stopEditing();
+      els.canvas.focus({ preventScroll: true });
+    }
+  });
+  window.addEventListener('resize', positionEditor);
 
   /* ---------------------------------------------------------------- */
   /* Keyboard                                                          */
@@ -848,8 +950,14 @@
       layer.x += moves[e.key][0];
       layer.y += moves[e.key][1];
       requestRender();
-    } else if (e.key === 'Delete' || e.key === 'Backspace') {
+    } else if (e.key === 'Delete') {
       removeSelected();
+    } else if (e.key === 'Backspace') {
+      startEditing(layer, { backspace: true });
+    } else if (e.key === 'Enter' || e.key === 'F2') {
+      startEditing(layer);
+    } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      startEditing(layer, { append: e.key });
     } else if (e.key === 'Escape') {
       select(null);
     } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd') {

@@ -191,6 +191,25 @@ button, input, select, textarea { font: inherit; color: inherit; }
   background: rgba(255, 204, 0, 0.06);
 }
 
+/* Typing on the image */
+.text-editor {
+  position: absolute;
+  z-index: 2;
+  margin: 0;
+  padding: 0;
+  border: 2px solid var(--accent);
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  resize: none;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  transform-origin: center;
+  caret-color: var(--accent);
+  outline: none;
+}
+.text-editor[hidden] { display: none; }
+
 /* Ask Claude */
 .ai-panel.is-active { display: flex; flex-direction: column; gap: 14px; }
 
@@ -236,6 +255,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* Stage */
 .stage {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
