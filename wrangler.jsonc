@@ -6,13 +6,18 @@
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
     "directory": "./",
-    "binding": "ASSETS"
+    "binding": "ASSETS",
+    // HTML pages go through the Worker so it can add the AdSense tag.
+    "run_worker_first": ["/", "/index.html", "/about", "/privacy", "/terms", "/contact"]
   },
   "vars": {
     "CLAUDE_MODEL": "claude-opus-5-5",
     "HOURLY_LIMIT_PER_VISITOR": "20",
     "DAILY_LIMIT_TOTAL": "500"
   },
+  // Keep variables added in the Cloudflare dashboard (ADSENSE_CLIENT and the
+  // ADSENSE_SLOT_* ad unit IDs) instead of deleting them on each deploy.
+  "keep_vars": true,
   // ANTHROPIC_API_KEY is a secret: add it in the Cloudflare dashboard, never here.
   "durable_objects": {
     "bindings": [{ "name": "RATE_LIMITER", "class_name": "RateLimiter" }]
