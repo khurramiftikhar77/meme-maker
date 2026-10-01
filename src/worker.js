@@ -112,10 +112,17 @@ function suggestCaptions(body, env) {
   const current = Array.isArray(body.currentTexts)
     ? body.currentTexts.slice(0, 6).map((t) => cleanText(t, 200)).filter(Boolean)
     : [];
+  // Optional box centres as [x%, y%] so Claude knows which caption goes where.
+  const positions = Array.isArray(body.positions)
+    ? body.positions.slice(0, boxes).map((p) => [clampInt(p?.[0], 0, 100, 50), clampInt(p?.[1], 0, 100, 50)])
+    : [];
+  const boxList = positions.length === boxes
+    ? `Text boxes in order: ${positions.map(([x, y], i) => `box ${i + 1} centred ${x}% from the left and ${y}% from the top`).join('; ')}.`
+    : `It has ${boxes} text box${boxes === 1 ? '' : 'es'}, filled in order from top to bottom.`;
 
   const prompt = [
     name ? `The image is the meme template "${name}".` : 'The image is a picture the user uploaded.',
-    `It has ${boxes} text box${boxes === 1 ? '' : 'es'}, filled in order from top to bottom.`,
+    boxList,
     current.length ? `Current text in the boxes (may just be placeholders): ${current.map((t) => `"${t}"`).join(', ')}.` : '',
     `Tone: ${tone}.`,
     `Write 5 different caption ideas. Each idea is an array of exactly ${boxes} strings, one per box in order. Use an empty string for a box that should stay blank.`,

@@ -56,6 +56,10 @@
     aiCaptionsBtn: $('#aiCaptionsBtn'),
     aiStatus: $('#aiStatus'),
     aiResults: $('#aiResults'),
+    ideas: $('#ideas'),
+    ideasStatus: $('#ideasStatus'),
+    ideaList: $('#ideaList'),
+    moreIdeasBtn: $('#moreIdeasBtn'),
   };
 
   const ctx = els.canvas.getContext('2d');
@@ -69,6 +73,8 @@
     drag: null,
     editingId: null,    // layer being typed into directly on the image
     templates: [],
+    placeholders: [],
+    templateName: '',
   };
 
   let nextId = 1;
@@ -258,8 +264,10 @@
     showToast('Loading template…');
     return loadRemoteImage(t.url)
       .then(({ img, exportable }) => {
-        setImage(img, t.name, exportable, t.boxes);
+        const builtIn = findBuiltIn(t.name);
+        setImage(img, t.name, exportable, t.boxes, builtIn?.b);
         state.templateName = t.name;
+        showIdeas(t.id, builtIn);
         showToast(exportable ? '' : 'This image blocks downloads from other sites. Try another template.');
         return true;
       })
@@ -339,6 +347,7 @@
       const name = file.name.replace(/\.[^.]+$/, '') || 'meme';
       setImage(downscale(img), name, true, 2);
       state.templateName = '';
+      showIdeas(`upload-${++uploadCount}`, null);
       showToast('');
     };
     img.onerror = () => {
@@ -365,7 +374,8 @@
   /* Image + layers                                                    */
   /* ---------------------------------------------------------------- */
 
-  function setImage(img, name, exportable, boxCount) {
+  // layout: optional [[x, y, width, size], ...] from captions.js, as fractions of the image.
+  function setImage(img, name, exportable, boxCount, layout) {
     state.image = img;
     state.imageName = name;
     state.exportable = exportable;
@@ -383,14 +393,19 @@
     els.propSize.max = Math.max(300, Math.round(Math.min(w, h) * 0.6));
 
     const count = Math.max(1, Math.min(boxCount, 6));
-    if (count === 2) {
-      addLayer({ text: 'TOP TEXT', y: 0.12 }, false);
-      addLayer({ text: 'BOTTOM TEXT', y: 0.88 }, false);
+    if (layout) {
+      layout.forEach(([x, y, width, size], i) => {
+        addLayer({ text: `TEXT ${i + 1}`, x, y, width, size, order: i }, false);
+      });
+    } else if (count === 2) {
+      addLayer({ text: 'TOP TEXT', y: 0.12, order: 0 }, false);
+      addLayer({ text: 'BOTTOM TEXT', y: 0.88, order: 1 }, false);
     } else {
       for (let i = 0; i < count; i++) {
-        addLayer({ text: `TEXT ${i + 1}`, y: (i + 0.5) / count }, false);
+        addLayer({ text: `TEXT ${i + 1}`, y: (i + 0.5) / count, order: i }, false);
       }
     }
+    state.placeholders = state.layers.map((l) => l.text);
     select(state.layers[0].id);
 
     [els.addTextBtn, els.copyBtn, els.shareBtn, els.downloadBtn].forEach((b) => { b.disabled = false; });
@@ -398,16 +413,17 @@
     els.aiCaptionsBtn.disabled = !exportable;
   }
 
-  function addLayer({ text = 'YOUR TEXT', y = 0.5 } = {}, selectIt = true) {
+  function addLayer({ text = 'YOUR TEXT', x = 0.5, y = 0.5, width = 0.92, size = 0.09, order } = {}, selectIt = true) {
     const W = els.canvas.width;
     const H = els.canvas.height;
-    const fontSize = Math.max(16, Math.round(Math.min(W, H) * 0.09));
+    const fontSize = Math.max(12, Math.round(Math.min(W, H) * size));
     const layer = {
       id: nextId++,
+      order,
       text,
-      x: W / 2,
+      x: W * x,
       y: H * y,
-      width: Math.round(W * 0.92),
+      width: Math.round(W * width),
       fontSize,
       fontFamily: 'Impact, Anton, sans-serif',
       fill: '#ffffff',
@@ -447,7 +463,7 @@
     const layer = selectedLayer();
     if (!layer) return;
     const offset = els.canvas.width * 0.03;
-    const copy = { ...layer, id: nextId++, x: layer.x + offset, y: layer.y + offset };
+    const copy = { ...layer, id: nextId++, order: undefined, x: layer.x + offset, y: layer.y + offset };
     state.layers.push(copy);
     select(copy.id);
   }
@@ -1126,8 +1142,14 @@
   }
 
   // Fill text boxes top to bottom; add boxes if Claude wrote more lines than exist.
+  // Text boxes in caption order: template slots first, then any extra boxes top to bottom.
+  function orderedLayers() {
+    const key = (l) => (l.order ?? 1000) * 1e6 + l.y;
+    return [...state.layers].sort((a, b) => key(a) - key(b));
+  }
+
   function applyTexts(texts) {
-    const ordered = [...state.layers].sort((a, b) => a.y - b.y);
+    const ordered = orderedLayers();
     texts.forEach((text, i) => {
       if (ordered[i]) {
         ordered[i].text = text;
@@ -1164,7 +1186,8 @@
         boxes,
         tone: els.aiTone.value,
         templateName: state.templateName || '',
-        currentTexts: [...state.layers].sort((a, b) => a.y - b.y).map((l) => l.text),
+        currentTexts: orderedLayers().map((l) => l.text),
+        positions: boxPositions(),
       });
       els.aiResults.replaceChildren(...data.suggestions.map((s) =>
         aiCard({ texts: s.texts }, () => {
@@ -1207,6 +1230,147 @@
         }));
       return data;
     });
+  });
+
+  /* ---------------------------------------------------------------- */
+  /* Caption ideas for the open image                                  */
+  /* ---------------------------------------------------------------- */
+
+  const BUILT_IN = new Map();
+  (window.MEME_CAPTIONS || []).forEach((entry) => {
+    entry.names.forEach((name) => BUILT_IN.set(nameKey(name), entry));
+  });
+
+  const ideaCache = new Map();
+  let ideasToken = 0;
+  let ideasKey = null;
+  let uploadCount = 0;
+
+  function findBuiltIn(name) {
+    return BUILT_IN.get(nameKey(name || '')) || null;
+  }
+
+  function boxPositions() {
+    return orderedLayers().map((l) => [
+      Math.round((l.x / els.canvas.width) * 100),
+      Math.round((l.y / els.canvas.height) * 100),
+    ]);
+  }
+
+  function placeholdersUntouched() {
+    return state.layers.length === state.placeholders.length &&
+      state.layers.every((l) => state.placeholders.includes(l.text));
+  }
+
+  function renderIdeas(ideas, { append = false } = {}) {
+    const cards = ideas.map((texts) => {
+      const li = document.createElement('li');
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'idea';
+      texts.filter(Boolean).forEach((text) => {
+        const line = document.createElement('span');
+        line.textContent = text;
+        btn.append(line);
+      });
+      btn.addEventListener('click', () => {
+        applyTexts(texts);
+        els.ideaList.querySelectorAll('.idea').forEach((b) => b.classList.toggle('is-active', b === btn));
+      });
+      li.append(btn);
+      return li;
+    });
+    if (append) els.ideaList.append(...cards);
+    else els.ideaList.replaceChildren(...cards);
+  }
+
+  function markActiveIdea(index) {
+    els.ideaList.querySelectorAll('.idea').forEach((b, i) => b.classList.toggle('is-active', i === index));
+  }
+
+  function genericIdeas(boxes) {
+    return (window.MEME_GENERIC || []).map(([top, bottom]) => {
+      if (boxes === 1) return [`${top} ${bottom}`];
+      return [top, ...Array(Math.max(0, boxes - 2)).fill(''), bottom];
+    });
+  }
+
+  // Built-in ideas show instantly; otherwise Claude writes some and generic ones fill in if it can't.
+  function showIdeas(key, builtIn) {
+    const token = ++ideasToken;
+    ideasKey = key;
+    els.ideas.hidden = false;
+    els.moreIdeasBtn.disabled = !state.exportable;
+
+    if (builtIn) {
+      renderIdeas(builtIn.c);
+      applyTexts(builtIn.c[0]);
+      markActiveIdea(0);
+      els.ideasStatus.textContent = 'Click an idea to use it, or click the text on the image to write your own.';
+      return;
+    }
+    if (ideaCache.has(key)) {
+      const cached = ideaCache.get(key);
+      renderIdeas(cached);
+      if (placeholdersUntouched()) {
+        applyTexts(cached[0]);
+        markActiveIdea(0);
+      }
+      els.ideasStatus.textContent = 'Ideas by Claude. Click one to use it.';
+      return;
+    }
+
+    els.ideaList.replaceChildren();
+    if (!state.exportable) {
+      showGenericIdeas('Claude cannot read this image, so here are some general ideas.');
+      return;
+    }
+    els.ideasStatus.textContent = 'Claude is writing caption ideas…';
+    // Short pause so quickly clicking through templates doesn't fire a request for each one.
+    setTimeout(() => {
+      if (token === ideasToken) fetchClaudeIdeas(token, { fill: true });
+    }, 700);
+  }
+
+  async function fetchClaudeIdeas(token, { fill = false, append = false } = {}) {
+    els.moreIdeasBtn.disabled = true;
+    try {
+      const data = await callAi('/api/captions', {
+        image: imageForAi(),
+        boxes: Math.max(1, Math.min(6, state.layers.length || 2)),
+        tone: els.aiTone.value,
+        templateName: state.templateName || '',
+        currentTexts: orderedLayers().map((l) => l.text),
+        positions: boxPositions(),
+      });
+      if (token !== ideasToken) return;
+      const ideas = data.suggestions.map((s) => s.texts);
+      ideaCache.set(ideasKey, [...(append ? ideaCache.get(ideasKey) || [] : []), ...ideas]);
+      renderIdeas(ideas, { append });
+      if (fill && placeholdersUntouched()) {
+        applyTexts(ideas[0]);
+        markActiveIdea(0);
+      }
+      const left = Number.isFinite(data.remaining) ? ` ${data.remaining} Claude requests left this hour.` : '';
+      els.ideasStatus.textContent = `Ideas by Claude. Click one to use it.${left}`;
+    } catch (err) {
+      if (token !== ideasToken) return;
+      if (append) els.ideasStatus.textContent = err.message;
+      else showGenericIdeas(`${err.message} Here are some general ideas instead.`);
+    } finally {
+      if (token === ideasToken) els.moreIdeasBtn.disabled = !state.exportable;
+    }
+  }
+
+  function showGenericIdeas(message) {
+    renderIdeas(genericIdeas(Math.max(1, Math.min(6, state.layers.length || 2))));
+    els.ideasStatus.textContent = message;
+  }
+
+  els.moreIdeasBtn.addEventListener('click', () => {
+    if (!state.image || !state.exportable) return;
+    els.ideasStatus.textContent = 'Claude is writing more ideas…';
+    fetchClaudeIdeas(ideasToken, { append: els.ideaList.children.length > 0 });
   });
 
   /* ---------------------------------------------------------------- */
