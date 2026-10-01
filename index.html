@@ -16,6 +16,7 @@
     <nav class="tabs" role="tablist">
       <button class="tab is-active" role="tab" aria-selected="true" data-tab="search">Search memes</button>
       <button class="tab" role="tab" aria-selected="false" data-tab="upload">Upload picture</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="ai">Ask Claude</button>
     </nav>
   </header>
 
@@ -43,7 +44,39 @@
           <span class="muted">or drag and drop it here</span>
           <span class="muted small">You can also paste an image with Ctrl+V / Cmd+V</span>
         </label>
-        <p class="muted small">Your picture never leaves your device.</p>
+        <p class="muted small">Your picture stays on your device unless you ask Claude for captions.</p>
+      </div>
+
+      <div class="tab-panel ai-panel" data-panel="ai">
+        <label class="field">
+          <span>Humor style</span>
+          <select id="aiTone">
+            <option value="general">General internet humor</option>
+            <option value="wholesome">Wholesome</option>
+            <option value="sarcastic">Sarcastic</option>
+            <option value="dark">Dark humor</option>
+            <option value="office">Office / corporate</option>
+            <option value="genz">Gen Z</option>
+            <option value="desi">Desi (Roman Urdu OK)</option>
+            <option value="dad">Dad jokes</option>
+          </select>
+        </label>
+
+        <form id="aiTopicForm" class="ai-block">
+          <label class="field">
+            <span>Describe your meme idea</span>
+            <textarea id="aiTopic" rows="2" maxlength="300" placeholder="e.g. Monday morning meetings that could have been an email"></textarea>
+          </label>
+          <button id="aiTopicBtn" class="btn btn-primary" type="submit">Make it</button>
+        </form>
+
+        <div class="ai-block">
+          <span class="muted small">Already have an image open?</span>
+          <button id="aiCaptionsBtn" class="btn" type="button" disabled>Suggest captions for my image</button>
+        </div>
+
+        <p id="aiStatus" class="muted small" aria-live="polite"></p>
+        <ul id="aiResults" class="ai-results"></ul>
       </div>
     </section>
 

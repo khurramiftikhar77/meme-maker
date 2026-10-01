@@ -1,8 +1,21 @@
 {
-  // Static site: Cloudflare serves the files in this folder as-is, no Worker code.
+  // Static site plus a small API (src/worker.js) for Claude meme suggestions.
   "name": "meme-maker",
+  "main": "src/worker.js",
   "compatibility_date": "2025-09-01",
+  "compatibility_flags": ["nodejs_compat"],
   "assets": {
-    "directory": "./"
-  }
+    "directory": "./",
+    "binding": "ASSETS"
+  },
+  "vars": {
+    "CLAUDE_MODEL": "claude-opus-5-5",
+    "HOURLY_LIMIT_PER_VISITOR": "20",
+    "DAILY_LIMIT_TOTAL": "500"
+  },
+  // ANTHROPIC_API_KEY is a secret: add it in the Cloudflare dashboard, never here.
+  "durable_objects": {
+    "bindings": [{ "name": "RATE_LIMITER", "class_name": "RateLimiter" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["RateLimiter"] }]
 }

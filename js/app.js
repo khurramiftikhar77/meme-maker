@@ -49,6 +49,13 @@
     propUpper: $('#propUpper'),
     duplicateBtn: $('#duplicateBtn'),
     deleteBtn: $('#deleteBtn'),
+    aiTone: $('#aiTone'),
+    aiTopicForm: $('#aiTopicForm'),
+    aiTopic: $('#aiTopic'),
+    aiTopicBtn: $('#aiTopicBtn'),
+    aiCaptionsBtn: $('#aiCaptionsBtn'),
+    aiStatus: $('#aiStatus'),
+    aiResults: $('#aiResults'),
   };
 
   const ctx = els.canvas.getContext('2d');
@@ -248,12 +255,17 @@
 
   function loadTemplate(t) {
     showToast('Loading template…');
-    loadRemoteImage(t.url)
+    return loadRemoteImage(t.url)
       .then(({ img, exportable }) => {
         setImage(img, t.name, exportable, t.boxes);
+        state.templateName = t.name;
         showToast(exportable ? '' : 'This image blocks downloads from other sites. Try another template.');
+        return true;
       })
-      .catch(() => showToast('Could not load that image.'));
+      .catch(() => {
+        showToast('Could not load that image.');
+        return false;
+      });
   }
 
   // Prefer a direct CORS load, then the proxy, and finally a display-only load.
@@ -325,6 +337,7 @@
       URL.revokeObjectURL(url);
       const name = file.name.replace(/\.[^.]+$/, '') || 'meme';
       setImage(downscale(img), name, true, 2);
+      state.templateName = '';
       showToast('');
     };
     img.onerror = () => {
@@ -381,6 +394,7 @@
 
     [els.addTextBtn, els.copyBtn, els.shareBtn, els.downloadBtn].forEach((b) => { b.disabled = false; });
     els.copyBtn.disabled = els.shareBtn.disabled = els.downloadBtn.disabled = !exportable;
+    els.aiCaptionsBtn.disabled = !exportable;
   }
 
   function addLayer({ text = 'YOUR TEXT', y = 0.5 } = {}, selectIt = true) {
@@ -918,6 +932,172 @@
         showToast('Could not share this image.');
       }
     }
+  });
+
+  /* ---------------------------------------------------------------- */
+  /* Ask Claude                                                        */
+  /* ---------------------------------------------------------------- */
+
+  const AI_IMAGE_SIDE = 1024;
+  // Claude knows the classic formats by name; Reddit titles are too noisy to pick from.
+  const AI_TEMPLATE_SOURCES = ['imgflip', 'memegen'];
+  const AI_TEMPLATE_LIMIT = 300;
+  let aiBusy = false;
+
+  async function callAi(path, payload) {
+    let res;
+    try {
+      res = await fetch(path, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+    } catch {
+      throw new Error('Could not reach the server. Check your connection.');
+    }
+    // Static hosts (e.g. GitHub Pages) have no API behind them.
+    if (res.status === 404 || res.status === 405 || !res.headers.get('content-type')?.includes('json')) {
+      throw new Error('Claude suggestions only work on the Cloudflare version of this site.');
+    }
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Something went wrong.');
+    return data;
+  }
+
+  async function runAi(label, task) {
+    if (aiBusy) return;
+    aiBusy = true;
+    els.aiTopicBtn.disabled = true;
+    els.aiCaptionsBtn.disabled = true;
+    setAiStatus(label);
+    els.aiResults.replaceChildren();
+    try {
+      const data = await task();
+      const left = Number.isFinite(data.remaining) ? ` ${data.remaining} suggestion${data.remaining === 1 ? '' : 's'} left this hour.` : '';
+      setAiStatus(`Click an idea to use it.${left}`);
+    } catch (err) {
+      setAiStatus(err.message, true);
+    } finally {
+      aiBusy = false;
+      els.aiTopicBtn.disabled = false;
+      els.aiCaptionsBtn.disabled = !state.image || !state.exportable;
+    }
+  }
+
+  function setAiStatus(message, isError = false) {
+    els.aiStatus.textContent = message;
+    els.aiStatus.classList.toggle('is-error', isError);
+  }
+
+  function aiCard({ title, texts, why }, onApply) {
+    const li = document.createElement('li');
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'ai-card';
+    if (title) {
+      const t = document.createElement('strong');
+      t.textContent = title;
+      btn.append(t);
+    }
+    texts.filter(Boolean).forEach((text) => {
+      const line = document.createElement('span');
+      line.className = 'ai-line';
+      line.textContent = text;
+      btn.append(line);
+    });
+    if (why) {
+      const w = document.createElement('span');
+      w.className = 'ai-why';
+      w.textContent = why;
+      btn.append(w);
+    }
+    btn.addEventListener('click', onApply);
+    li.append(btn);
+    return li;
+  }
+
+  // Fill text boxes top to bottom; add boxes if Claude wrote more lines than exist.
+  function applyTexts(texts) {
+    const ordered = [...state.layers].sort((a, b) => a.y - b.y);
+    texts.forEach((text, i) => {
+      if (ordered[i]) {
+        ordered[i].text = text;
+      } else {
+        ordered.push(addLayer({ text, y: Math.min(0.9, (i + 0.5) / texts.length) }, false));
+      }
+    });
+    ordered.slice(texts.length).forEach((layer) => { layer.text = ''; });
+    syncProps();
+    renderLayerList();
+    requestRender();
+  }
+
+  function imageForAi() {
+    const w = els.canvas.width;
+    const h = els.canvas.height;
+    const scale = Math.min(1, AI_IMAGE_SIDE / Math.max(w, h));
+    const c = document.createElement('canvas');
+    c.width = Math.round(w * scale);
+    c.height = Math.round(h * scale);
+    const g = c.getContext('2d');
+    g.fillStyle = '#fff'; // JPEG has no transparency
+    g.fillRect(0, 0, c.width, c.height);
+    g.drawImage(state.image, 0, 0, c.width, c.height);
+    return c.toDataURL('image/jpeg', 0.85);
+  }
+
+  els.aiCaptionsBtn.addEventListener('click', () => {
+    if (!state.image || !state.exportable) return;
+    const boxes = Math.max(1, Math.min(6, state.layers.length || 2));
+    runAi('Claude is looking at your image…', async () => {
+      const data = await callAi('/api/captions', {
+        image: imageForAi(),
+        boxes,
+        tone: els.aiTone.value,
+        templateName: state.templateName || '',
+        currentTexts: [...state.layers].sort((a, b) => a.y - b.y).map((l) => l.text),
+      });
+      els.aiResults.replaceChildren(...data.suggestions.map((s) =>
+        aiCard({ texts: s.texts }, () => {
+          applyTexts(s.texts);
+          showToast('Captions applied. You can still edit them.');
+        })));
+      return data;
+    });
+  });
+
+  els.aiTopicForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const topic = els.aiTopic.value.trim();
+    if (!topic) {
+      setAiStatus('Describe your meme idea first.', true);
+      els.aiTopic.focus();
+      return;
+    }
+    const candidates = state.templates
+      .filter((t) => AI_TEMPLATE_SOURCES.includes(t.source))
+      .slice(0, AI_TEMPLATE_LIMIT);
+    if (!candidates.length) {
+      setAiStatus('Templates are still loading. Try again in a moment.', true);
+      return;
+    }
+    runAi('Claude is picking templates and writing captions…', async () => {
+      const data = await callAi('/api/meme', {
+        topic,
+        tone: els.aiTone.value,
+        templates: candidates.map((t) => ({ id: t.id, name: t.name, boxes: t.boxes })),
+      });
+      const byId = new Map(candidates.map((t) => [t.id, t]));
+      els.aiResults.replaceChildren(...data.suggestions
+        .filter((s) => byId.has(s.templateId))
+        .map((s) => {
+          const t = byId.get(s.templateId);
+          return aiCard({ title: t.name, texts: s.texts, why: s.why }, async () => {
+            if (await loadTemplate(t)) applyTexts(s.texts);
+          });
+        }));
+      return data;
+    });
   });
 
   /* ---------------------------------------------------------------- */
