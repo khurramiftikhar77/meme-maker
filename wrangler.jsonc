@@ -1,26 +1,20 @@
 {
-  // Static site plus a small API (src/worker.js) for Claude meme suggestions.
+  // Static meme maker site; src/worker.js adds Google AdSense to its pages.
   "name": "meme-maker",
   "main": "src/worker.js",
   "compatibility_date": "2025-09-01",
-  "compatibility_flags": ["nodejs_compat"],
   "assets": {
     "directory": "./",
     "binding": "ASSETS",
     // HTML pages go through the Worker so it can add the AdSense tag.
     "run_worker_first": ["/", "/index.html", "/about", "/privacy", "/terms", "/contact"]
   },
-  "vars": {
-    "CLAUDE_MODEL": "claude-opus-5-5",
-    "HOURLY_LIMIT_PER_VISITOR": "20",
-    "DAILY_LIMIT_TOTAL": "500"
-  },
   // Keep variables added in the Cloudflare dashboard (ADSENSE_CLIENT and the
   // ADSENSE_SLOT_* ad unit IDs) instead of deleting them on each deploy.
   "keep_vars": true,
-  // ANTHROPIC_API_KEY is a secret: add it in the Cloudflare dashboard, never here.
-  "durable_objects": {
-    "bindings": [{ "name": "RATE_LIMITER", "class_name": "RateLimiter" }]
-  },
-  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["RateLimiter"] }]
+  // The rate limiter used by the removed AI features: v2 deletes it and its stored counters.
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["RateLimiter"] },
+    { "tag": "v2", "deleted_classes": ["RateLimiter"] }
+  ]
 }

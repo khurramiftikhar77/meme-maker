@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Meme Maker: Free Online Meme Generator</title>
-  <meta name="description" content="Free online meme generator. Search 500+ meme templates or upload your own picture, add and edit text, get caption ideas, and download your meme as a PNG.">
+  <meta name="description" content="Free online meme generator. Search 500+ meme templates or upload your own picture, add and edit text, use ready-made caption ideas, and download your meme as a PNG.">
   <link rel="canonical" href="https://mememaker.khurramiftikhar.com/">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Meme Maker: Free Online Meme Generator">
@@ -21,7 +21,6 @@
     <nav class="tabs" role="tablist">
       <button class="tab is-active" role="tab" aria-selected="true" data-tab="search">Search memes</button>
       <button class="tab" role="tab" aria-selected="false" data-tab="upload">Upload picture</button>
-      <button class="tab" role="tab" aria-selected="false" data-tab="ai">Ask Claude</button>
     </nav>
   </header>
 
@@ -50,39 +49,7 @@
           <span class="muted">or drag and drop it here</span>
           <span class="muted small">You can also paste an image with Ctrl+V / Cmd+V</span>
         </label>
-        <p class="muted small">Your picture is edited on your device. To suggest captions, a smaller copy is sent to Claude (AI) and is not stored.</p>
-      </div>
-
-      <div class="tab-panel ai-panel" data-panel="ai">
-        <label class="field">
-          <span>Humor style</span>
-          <select id="aiTone">
-            <option value="general">General internet humor</option>
-            <option value="wholesome">Wholesome</option>
-            <option value="sarcastic">Sarcastic</option>
-            <option value="dark">Dark humor</option>
-            <option value="office">Office / corporate</option>
-            <option value="genz">Gen Z</option>
-            <option value="desi">Desi (Roman Urdu OK)</option>
-            <option value="dad">Dad jokes</option>
-          </select>
-        </label>
-
-        <form id="aiTopicForm" class="ai-block">
-          <label class="field">
-            <span>Describe your meme idea</span>
-            <textarea id="aiTopic" rows="2" maxlength="300" placeholder="e.g. Monday morning meetings that could have been an email"></textarea>
-          </label>
-          <button id="aiTopicBtn" class="btn btn-primary" type="submit">Make it</button>
-        </form>
-
-        <div class="ai-block">
-          <span class="muted small">Already have an image open?</span>
-          <button id="aiCaptionsBtn" class="btn" type="button" disabled>Suggest captions for my image</button>
-        </div>
-
-        <p id="aiStatus" class="muted small" aria-live="polite"></p>
-        <ul id="aiResults" class="ai-results"></ul>
+        <p class="muted small">Your picture never leaves your device.</p>
       </div>
     </section>
 
@@ -105,7 +72,6 @@
       <section id="ideas" class="ideas" hidden>
         <div class="ideas-head">
           <h2>Caption ideas</h2>
-          <button id="moreIdeasBtn" class="btn" type="button">More from Claude</button>
         </div>
         <p id="ideasStatus" class="muted small" aria-live="polite"></p>
         <ul id="ideaList" class="idea-list"></ul>
@@ -194,8 +160,8 @@
   <footer class="site-footer">
     <section class="site-about">
       <h2>Free online meme generator</h2>
-      <p>Meme Maker lets you create memes in your browser in a few seconds. Search more than 500 popular meme templates, or upload your own picture, then click any text on the image to edit it. Every popular template comes with ready-made caption ideas, and you can ask Claude, an AI assistant, to write new ones for any picture. Change the font, size, colors and outline, move and rotate text, then download your meme as a PNG or copy it to share.</p>
-      <p>Pictures you upload are edited on your device and are not stored on our servers.</p>
+      <p>Meme Maker lets you create memes in your browser in a few seconds. Search more than 500 popular meme templates, or upload your own picture, then click any text on the image to edit it. Every popular template comes with ready-made caption ideas, and general ideas are ready for any other picture. Change the font, size, colors and outline, move and rotate text, then download your meme as a PNG or copy it to share.</p>
+      <p>Pictures you upload never leave your device.</p>
     </section>
     <nav class="footer-links" aria-label="Site">
       <a href="/about">About</a>

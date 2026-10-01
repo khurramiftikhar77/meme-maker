@@ -49,17 +49,9 @@
     propUpper: $('#propUpper'),
     duplicateBtn: $('#duplicateBtn'),
     deleteBtn: $('#deleteBtn'),
-    aiTone: $('#aiTone'),
-    aiTopicForm: $('#aiTopicForm'),
-    aiTopic: $('#aiTopic'),
-    aiTopicBtn: $('#aiTopicBtn'),
-    aiCaptionsBtn: $('#aiCaptionsBtn'),
-    aiStatus: $('#aiStatus'),
-    aiResults: $('#aiResults'),
     ideas: $('#ideas'),
     ideasStatus: $('#ideasStatus'),
     ideaList: $('#ideaList'),
-    moreIdeasBtn: $('#moreIdeasBtn'),
   };
 
   const ctx = els.canvas.getContext('2d');
@@ -73,8 +65,6 @@
     drag: null,
     editingId: null,    // layer being typed into directly on the image
     templates: [],
-    placeholders: [],
-    templateName: '',
   };
 
   let nextId = 1;
@@ -266,8 +256,7 @@
       .then(({ img, exportable }) => {
         const builtIn = findBuiltIn(t.name);
         setImage(img, t.name, exportable, t.boxes, builtIn?.b);
-        state.templateName = t.name;
-        showIdeas(t.id, builtIn);
+        showIdeas(builtIn);
         showToast(exportable ? '' : 'This image blocks downloads from other sites. Try another template.');
         return true;
       })
@@ -346,8 +335,7 @@
       URL.revokeObjectURL(url);
       const name = file.name.replace(/\.[^.]+$/, '') || 'meme';
       setImage(downscale(img), name, true, 2);
-      state.templateName = '';
-      showIdeas(`upload-${++uploadCount}`, null);
+      showIdeas(null);
       showToast('');
     };
     img.onerror = () => {
@@ -405,12 +393,10 @@
         addLayer({ text: `TEXT ${i + 1}`, y: (i + 0.5) / count, order: i }, false);
       }
     }
-    state.placeholders = state.layers.map((l) => l.text);
     select(state.layers[0].id);
 
     [els.addTextBtn, els.copyBtn, els.shareBtn, els.downloadBtn].forEach((b) => { b.disabled = false; });
     els.copyBtn.disabled = els.shareBtn.disabled = els.downloadBtn.disabled = !exportable;
-    els.aiCaptionsBtn.disabled = !exportable;
   }
 
   function addLayer({ text = 'YOUR TEXT', x = 0.5, y = 0.5, width = 0.92, size = 0.09, order } = {}, selectIt = true) {
@@ -1060,88 +1046,9 @@
   });
 
   /* ---------------------------------------------------------------- */
-  /* Ask Claude                                                        */
+  /* Applying captions                                                */
   /* ---------------------------------------------------------------- */
 
-  const AI_IMAGE_SIDE = 1024;
-  // Claude knows the classic formats by name; Reddit titles are too noisy to pick from.
-  const AI_TEMPLATE_SOURCES = ['imgflip', 'memegen'];
-  const AI_TEMPLATE_LIMIT = 300;
-  let aiBusy = false;
-
-  async function callAi(path, payload) {
-    let res;
-    try {
-      res = await fetch(path, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-    } catch {
-      throw new Error('Could not reach the server. Check your connection.');
-    }
-    // Static hosts (e.g. GitHub Pages) have no API behind them.
-    if (res.status === 404 || res.status === 405 || !res.headers.get('content-type')?.includes('json')) {
-      throw new Error('Claude suggestions only work on the Cloudflare version of this site.');
-    }
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Something went wrong.');
-    return data;
-  }
-
-  async function runAi(label, task) {
-    if (aiBusy) return;
-    aiBusy = true;
-    els.aiTopicBtn.disabled = true;
-    els.aiCaptionsBtn.disabled = true;
-    setAiStatus(label);
-    els.aiResults.replaceChildren();
-    try {
-      const data = await task();
-      const left = Number.isFinite(data.remaining) ? ` ${data.remaining} suggestion${data.remaining === 1 ? '' : 's'} left this hour.` : '';
-      setAiStatus(`Click an idea to use it.${left}`);
-    } catch (err) {
-      setAiStatus(err.message, true);
-    } finally {
-      aiBusy = false;
-      els.aiTopicBtn.disabled = false;
-      els.aiCaptionsBtn.disabled = !state.image || !state.exportable;
-    }
-  }
-
-  function setAiStatus(message, isError = false) {
-    els.aiStatus.textContent = message;
-    els.aiStatus.classList.toggle('is-error', isError);
-  }
-
-  function aiCard({ title, texts, why }, onApply) {
-    const li = document.createElement('li');
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'ai-card';
-    if (title) {
-      const t = document.createElement('strong');
-      t.textContent = title;
-      btn.append(t);
-    }
-    texts.filter(Boolean).forEach((text) => {
-      const line = document.createElement('span');
-      line.className = 'ai-line';
-      line.textContent = text;
-      btn.append(line);
-    });
-    if (why) {
-      const w = document.createElement('span');
-      w.className = 'ai-why';
-      w.textContent = why;
-      btn.append(w);
-    }
-    btn.addEventListener('click', onApply);
-    li.append(btn);
-    return li;
-  }
-
-  // Fill text boxes top to bottom; add boxes if Claude wrote more lines than exist.
   // Text boxes in caption order: template slots first, then any extra boxes top to bottom.
   function orderedLayers() {
     const key = (l) => (l.order ?? 1000) * 1e6 + l.y;
@@ -1163,75 +1070,6 @@
     requestRender();
   }
 
-  function imageForAi() {
-    const w = els.canvas.width;
-    const h = els.canvas.height;
-    const scale = Math.min(1, AI_IMAGE_SIDE / Math.max(w, h));
-    const c = document.createElement('canvas');
-    c.width = Math.round(w * scale);
-    c.height = Math.round(h * scale);
-    const g = c.getContext('2d');
-    g.fillStyle = '#fff'; // JPEG has no transparency
-    g.fillRect(0, 0, c.width, c.height);
-    g.drawImage(state.image, 0, 0, c.width, c.height);
-    return c.toDataURL('image/jpeg', 0.85);
-  }
-
-  els.aiCaptionsBtn.addEventListener('click', () => {
-    if (!state.image || !state.exportable) return;
-    const boxes = Math.max(1, Math.min(6, state.layers.length || 2));
-    runAi('Claude is looking at your image…', async () => {
-      const data = await callAi('/api/captions', {
-        image: imageForAi(),
-        boxes,
-        tone: els.aiTone.value,
-        templateName: state.templateName || '',
-        currentTexts: orderedLayers().map((l) => l.text),
-        positions: boxPositions(),
-      });
-      els.aiResults.replaceChildren(...data.suggestions.map((s) =>
-        aiCard({ texts: s.texts }, () => {
-          applyTexts(s.texts);
-          showToast('Captions applied. You can still edit them.');
-        })));
-      return data;
-    });
-  });
-
-  els.aiTopicForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const topic = els.aiTopic.value.trim();
-    if (!topic) {
-      setAiStatus('Describe your meme idea first.', true);
-      els.aiTopic.focus();
-      return;
-    }
-    const candidates = state.templates
-      .filter((t) => AI_TEMPLATE_SOURCES.includes(t.source))
-      .slice(0, AI_TEMPLATE_LIMIT);
-    if (!candidates.length) {
-      setAiStatus('Templates are still loading. Try again in a moment.', true);
-      return;
-    }
-    runAi('Claude is picking templates and writing captions…', async () => {
-      const data = await callAi('/api/meme', {
-        topic,
-        tone: els.aiTone.value,
-        templates: candidates.map((t) => ({ id: t.id, name: t.name, boxes: t.boxes })),
-      });
-      const byId = new Map(candidates.map((t) => [t.id, t]));
-      els.aiResults.replaceChildren(...data.suggestions
-        .filter((s) => byId.has(s.templateId))
-        .map((s) => {
-          const t = byId.get(s.templateId);
-          return aiCard({ title: t.name, texts: s.texts, why: s.why }, async () => {
-            if (await loadTemplate(t)) applyTexts(s.texts);
-          });
-        }));
-      return data;
-    });
-  });
-
   /* ---------------------------------------------------------------- */
   /* Caption ideas for the open image                                  */
   /* ---------------------------------------------------------------- */
@@ -1241,29 +1079,12 @@
     entry.names.forEach((name) => BUILT_IN.set(nameKey(name), entry));
   });
 
-  const ideaCache = new Map();
-  let ideasToken = 0;
-  let ideasKey = null;
-  let uploadCount = 0;
-
   function findBuiltIn(name) {
     return BUILT_IN.get(nameKey(name || '')) || null;
   }
 
-  function boxPositions() {
-    return orderedLayers().map((l) => [
-      Math.round((l.x / els.canvas.width) * 100),
-      Math.round((l.y / els.canvas.height) * 100),
-    ]);
-  }
-
-  function placeholdersUntouched() {
-    return state.layers.length === state.placeholders.length &&
-      state.layers.every((l) => state.placeholders.includes(l.text));
-  }
-
-  function renderIdeas(ideas, { append = false } = {}) {
-    const cards = ideas.map((texts) => {
+  function renderIdeas(ideas) {
+    els.ideaList.replaceChildren(...ideas.map((texts) => {
       const li = document.createElement('li');
       const btn = document.createElement('button');
       btn.type = 'button';
@@ -1279,13 +1100,7 @@
       });
       li.append(btn);
       return li;
-    });
-    if (append) els.ideaList.append(...cards);
-    else els.ideaList.replaceChildren(...cards);
-  }
-
-  function markActiveIdea(index) {
-    els.ideaList.querySelectorAll('.idea').forEach((b, i) => b.classList.toggle('is-active', i === index));
+    }));
   }
 
   function genericIdeas(boxes) {
@@ -1295,83 +1110,19 @@
     });
   }
 
-  // Built-in ideas show instantly; otherwise Claude writes some and generic ones fill in if it can't.
-  function showIdeas(key, builtIn) {
-    const token = ++ideasToken;
-    ideasKey = key;
+  // Popular templates get their own ideas, filled in straight away; everything else gets general ideas.
+  function showIdeas(builtIn) {
     els.ideas.hidden = false;
-    els.moreIdeasBtn.disabled = !state.exportable;
-
     if (builtIn) {
       renderIdeas(builtIn.c);
       applyTexts(builtIn.c[0]);
-      markActiveIdea(0);
+      els.ideaList.querySelector('.idea')?.classList.add('is-active');
       els.ideasStatus.textContent = 'Click an idea to use it, or click the text on the image to write your own.';
-      return;
-    }
-    if (ideaCache.has(key)) {
-      const cached = ideaCache.get(key);
-      renderIdeas(cached);
-      if (placeholdersUntouched()) {
-        applyTexts(cached[0]);
-        markActiveIdea(0);
-      }
-      els.ideasStatus.textContent = 'Ideas by Claude. Click one to use it.';
-      return;
-    }
-
-    els.ideaList.replaceChildren();
-    if (!state.exportable) {
-      showGenericIdeas('Claude cannot read this image, so here are some general ideas.');
-      return;
-    }
-    els.ideasStatus.textContent = 'Claude is writing caption ideas…';
-    // Short pause so quickly clicking through templates doesn't fire a request for each one.
-    setTimeout(() => {
-      if (token === ideasToken) fetchClaudeIdeas(token, { fill: true });
-    }, 700);
-  }
-
-  async function fetchClaudeIdeas(token, { fill = false, append = false } = {}) {
-    els.moreIdeasBtn.disabled = true;
-    try {
-      const data = await callAi('/api/captions', {
-        image: imageForAi(),
-        boxes: Math.max(1, Math.min(6, state.layers.length || 2)),
-        tone: els.aiTone.value,
-        templateName: state.templateName || '',
-        currentTexts: orderedLayers().map((l) => l.text),
-        positions: boxPositions(),
-      });
-      if (token !== ideasToken) return;
-      const ideas = data.suggestions.map((s) => s.texts);
-      ideaCache.set(ideasKey, [...(append ? ideaCache.get(ideasKey) || [] : []), ...ideas]);
-      renderIdeas(ideas, { append });
-      if (fill && placeholdersUntouched()) {
-        applyTexts(ideas[0]);
-        markActiveIdea(0);
-      }
-      const left = Number.isFinite(data.remaining) ? ` ${data.remaining} Claude requests left this hour.` : '';
-      els.ideasStatus.textContent = `Ideas by Claude. Click one to use it.${left}`;
-    } catch (err) {
-      if (token !== ideasToken) return;
-      if (append) els.ideasStatus.textContent = err.message;
-      else showGenericIdeas(`${err.message} Here are some general ideas instead.`);
-    } finally {
-      if (token === ideasToken) els.moreIdeasBtn.disabled = !state.exportable;
+    } else {
+      renderIdeas(genericIdeas(Math.max(1, Math.min(6, state.layers.length || 2))));
+      els.ideasStatus.textContent = 'General ideas that work on most pictures. Click one to use it, or click the text on the image to write your own.';
     }
   }
-
-  function showGenericIdeas(message) {
-    renderIdeas(genericIdeas(Math.max(1, Math.min(6, state.layers.length || 2))));
-    els.ideasStatus.textContent = message;
-  }
-
-  els.moreIdeasBtn.addEventListener('click', () => {
-    if (!state.image || !state.exportable) return;
-    els.ideasStatus.textContent = 'Claude is writing more ideas…';
-    fetchClaudeIdeas(ideasToken, { append: els.ideaList.children.length > 0 });
-  });
 
   /* ---------------------------------------------------------------- */
   /* Helpers                                                           */
