@@ -743,7 +743,7 @@
       if (hit.handle.type === 'width') return 'ew-resize';
       return 'nwse-resize';
     }
-    return hitLayer(p) ? 'move' : 'default';
+    return hitLayer(p) ? 'text' : 'default';
   }
 
   els.canvas.addEventListener('pointerdown', (e) => {
@@ -767,12 +767,11 @@
       const layer = hitLayer(p);
       if (layer) {
         // Bring the grabbed layer to the front.
-        const wasSelected = layer.id === state.selectedId;
         state.layers = state.layers.filter((l) => l !== layer).concat(layer);
         select(layer.id);
         state.drag = {
           mode: 'move', layer, dx: p.x - layer.x, dy: p.y - layer.y,
-          wasSelected, startX: e.clientX, startY: e.clientY,
+          startX: e.clientX, startY: e.clientY,
         };
       } else {
         select(null);
@@ -826,7 +825,9 @@
     els.canvas.style.cursor = cursorFor(toCanvasPoint(e));
 
     const moved = drag.mode === 'move' && Math.hypot(e.clientX - drag.startX, e.clientY - drag.startY) > 4;
-    if (e.type === 'pointerup' && drag.mode === 'move' && drag.wasSelected && !moved) {
+    if (moved) els.canvas.style.cursor = 'text';
+    // A click or tap without dragging starts typing straight away.
+    if (e.type === 'pointerup' && drag.mode === 'move' && !moved) {
       startEditing(drag.layer);
     }
   };

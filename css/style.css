@@ -206,7 +206,16 @@ button, input, select, textarea { font: inherit; color: inherit; }
   overflow-wrap: anywhere;
   transform-origin: center;
   caret-color: var(--accent);
+  cursor: text;
   outline: none;
+  animation: editor-glow 1.2s ease-in-out infinite alternate;
+}
+@keyframes editor-glow {
+  from { box-shadow: 0 0 0 0 rgba(255, 204, 0, 0.6); }
+  to { box-shadow: 0 0 0 4px rgba(255, 204, 0, 0.15); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .text-editor { animation: none; }
 }
 .text-editor[hidden] { display: none; }
 
