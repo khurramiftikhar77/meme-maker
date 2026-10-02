@@ -14,8 +14,12 @@
     // Unknown URLs get 404.html with a real 404 status.
     "not_found_handling": "404-page"
   },
-  // Keep variables added in the Cloudflare dashboard (ADSENSE_CLIENT and the
-  // ADSENSE_SLOT_* ad unit IDs) instead of deleting them on each deploy.
+  // The AdSense publisher ID is public (it appears in every page), so it lives here.
+  "vars": {
+    "ADSENSE_CLIENT": "ca-pub-3276058118984177"
+  },
+  // Keep variables added in the Cloudflare dashboard (the ADSENSE_SLOT_* ad unit IDs)
+  // instead of deleting them on each deploy.
   "keep_vars": true,
   // The rate limiter used by the removed AI features: v2 deletes it and its stored counters.
   "migrations": [
