@@ -55,7 +55,8 @@ ${robots ? `  <meta name="robots" content="${robots}">\n` : ''}${canonical ? `  
   <meta property="og:type" content="website">
   <meta property="og:title" content="${esc(title)}">
   <meta property="og:description" content="${esc(description)}">
-  <meta property="og:url" content="${canonical}">\n` : ''}  <link rel="stylesheet" href="/css/style.css">
+  <meta property="og:url" content="${canonical}">\n` : ''}  <link rel="stylesheet" href="/css/fonts.css">
+  <link rel="stylesheet" href="/css/style.css">
 ${head}</head>
 <body>
   <header class="topbar">
@@ -78,6 +79,7 @@ ${body}
       <a href="/privacy">Privacy Policy</a>
       <a href="/terms">Terms of Use</a>
       <a href="/contact">Contact</a>
+      <a href="/impressum">Impressum</a>
     </nav>
     <p class="muted small">&copy; <span id="year">2026</span> Meme Maker. Meme templates belong to their respective owners.</p>
   </footer>
@@ -232,7 +234,7 @@ ${templates.map((t) => `        <li><a href="/templates/${t.slug}">${esc(t.name)
 }
 
 function sitemap() {
-  const paths = ['/', '/templates/', ...templates.map((t) => `/templates/${t.slug}`), '/about', '/privacy', '/terms', '/contact'];
+  const paths = ['/', '/templates/', ...templates.map((t) => `/templates/${t.slug}`), '/about', '/privacy', '/terms', '/contact', '/impressum'];
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${paths.map((p) => `  <url><loc>${SITE}${p}</loc></url>`).join('\n')}
