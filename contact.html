@@ -19,14 +19,42 @@
 
   <main class="page">
     <h1>Contact</h1>
-    <p>We would love to hear from you. Email us at <a href="mailto:contact@khurramiftikhar.com">contact@khurramiftikhar.com</a> for:</p>
-    <ul>
-      <li>Bug reports and feature ideas</li>
-      <li>Requests to add or remove a meme template</li>
-      <li>Privacy questions</li>
-      <li>Advertising and other enquiries</li>
-    </ul>
-    <p>We usually reply within a few days.</p>
+    <p>Found a bug, want a template added or removed, or have an idea? Send a message below and it goes straight to our inbox. We usually reply within a few days.</p>
+
+    <form class="contact-form" id="contact-form" novalidate>
+      <div class="field-row">
+        <label class="field">
+          <span>Your name</span>
+          <input type="text" name="name" autocomplete="name" required>
+        </label>
+        <label class="field">
+          <span>Your email</span>
+          <input type="email" name="email" autocomplete="email" required>
+        </label>
+      </div>
+      <label class="field">
+        <span>What is it about?</span>
+        <select name="topic">
+          <option>Bug report</option>
+          <option value="add-template">Add a meme template</option>
+          <option value="remove-template">Remove a meme template</option>
+          <option>Feature idea</option>
+          <option>Privacy question</option>
+          <option>Advertising</option>
+          <option>Just saying hi</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>Message</span>
+        <textarea name="message" rows="6" required placeholder="What happened, or what would you like?"></textarea>
+      </label>
+      <input type="checkbox" name="botcheck" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <button type="submit" class="btn btn-primary">Send message</button>
+      <p class="form-status" data-status aria-live="polite"></p>
+      <p class="muted small">Your message is only used to reply to you. No newsletter, no sharing. See the <a href="/privacy">Privacy Policy</a>.</p>
+    </form>
+
+    <p>Prefer email? Write to <a href="mailto:mememaker@khurramiftikhar.com">mememaker@khurramiftikhar.com</a>.</p>
   </main>
 
   <footer class="site-footer">
@@ -41,5 +69,6 @@
     <p class="muted small">&copy; <span id="year">2026</span> Meme Maker. Meme templates belong to their respective owners.</p>
   </footer>
   <script src="/js/ads.js"></script>
+  <script src="/js/contact.js"></script>
 </body>
 </html>
