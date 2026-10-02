@@ -349,4 +349,116 @@ module.exports = {
     about: 'Keanu Reeves sitting alone on a bench eating a sandwich, from a 2010 photo. It is used for small, gloomy moments.',
     use: 'Describe the sad moment across the top and bottom text.',
   },
+  "Bike Fall": {
+    about: "Three panels of a cyclist putting a stick into his own front wheel and then lying on the ground blaming someone else. It is about causing your own problems.",
+    use: "Label the cyclist, write the self-sabotaging action on the stick, and put the complaint in the last panel.",
+  },
+  "The Rock Driving": {
+    about: "Dwayne \"The Rock\" Johnson driving and chatting with a passenger, from the film Race to Witch Mountain. Her answer makes him turn and stare in disbelief.",
+    use: "Write the Rock's question in the top panel and the shocking answer in the bottom panel.",
+  },
+  "Marked Safe From": {
+    about: "A parody of a social network safety check notice that marks someone as safe from an event. It jokes about avoiding something mildly unpleasant.",
+    use: "Keep \"Marked safe from\" on top and write the thing you avoided at the bottom.",
+  },
+  "Confused Gandalf": {
+    about: "Gandalf from The Lord of the Rings looking puzzled, linked to his line \"I have no memory of this place\". It is used for total confusion or forgetting.",
+    use: "Describe what confuses you across the top and bottom text.",
+  },
+  "Kombucha Girl": {
+    about: "A woman trying kombucha on camera, pulling a face of disgust and then slowly deciding she likes it. It shows changing your mind.",
+    use: "Put the first reaction on top and the change of heart at the bottom.",
+  },
+  "Shut Up And Take My Money Fry": {
+    about: "Fry from Futurama waving cash and shouting \"Shut up and take my money!\". It is used for a product or idea you want instantly.",
+    use: "Describe the irresistible thing on top and keep \"Shut up and take my money\" at the bottom.",
+  },
+  "Black Girl Wat": {
+    about: "A young girl giving the camera a deeply confused look. It reacts to something that makes no sense.",
+    use: "Describe the confusing statement across the top and bottom text.",
+  },
+  "Domino Effect": {
+    about: "A hand tipping a tiny domino that leads to a gigantic one. It shows a small cause leading to a huge result.",
+    use: "Write the small cause near the tiny domino and the huge result near the big one.",
+  },
+  "Imagination Spongebob": {
+    about: "SpongeBob spreading his hands to make a rainbow labelled \"Imagination\". It mocks unrealistic plans or answers.",
+    use: "Write the question or problem on top and keep \"Imagination\" at the bottom.",
+  },
+  "Disappointed Black Guy": {
+    about: "A man turning to the camera with a deeply disappointed look. It reacts to a letdown.",
+    use: "Describe the disappointment across the top and bottom text.",
+  },
+  "Sweating Jordan Peele": {
+    about: "Jordan Peele with a towel, sweating nervously, from a Key & Peele sketch. It shows anxiety under pressure.",
+    use: "Describe the nerve-racking moment across the top and bottom text.",
+  },
+  "Sad Affleck": {
+    about: "Ben Affleck looking miserable during a 2016 interview. It is used for quiet disappointment.",
+    use: "Describe the gloomy moment across the top and bottom text.",
+  },
+  "Crying Michael Jordan": {
+    about: "Michael Jordan in tears during his 2009 Hall of Fame speech. It is used for defeat and heartbreak, often in sport.",
+    use: "Describe the painful loss across the top and bottom text.",
+  },
+  "Overly Attached Girlfriend": {
+    about: "A woman staring wide-eyed and smiling too intensely, from a 2012 video by Laina Morris. Captions show clingy, over-the-top behaviour.",
+    use: "Write a clingy statement across the top and bottom text.",
+  },
+  "Scumbag Steve": {
+    about: "A young man in a fur-lined hat giving a cocky look. Captions describe selfish or annoying behaviour.",
+    use: "Describe what he does on top and the selfish twist at the bottom.",
+  },
+  "Good Guy Greg": {
+    about: "A smiling young man with a joint, used for captions about people doing kind, thoughtful things.",
+    use: "Describe what he does on top and the kind twist at the bottom.",
+  },
+  "Socially Awkward Penguin": {
+    about: "A penguin on a blue background, used for captions about awkward social moments.",
+    use: "Describe the awkward situation on top and the cringe result at the bottom.",
+  },
+  "Insanity Wolf": {
+    about: "A snarling wolf on a red and orange background, used for captions about wild, extreme reactions to normal situations.",
+    use: "Write a normal situation on top and an absurdly extreme reaction at the bottom.",
+  },
+  "Conspiracy Keanu": {
+    about: "Keanu Reeves with a stunned face, from Bill & Ted's Excellent Adventure. Captions are mind-blown \"what if\" thoughts.",
+    use: "Start with \"What if\" and finish the wild theory at the bottom.",
+  },
+  "The Most Interesting Man In The World": {
+    about: "Actor Jonathan Goldsmith from a beer advert, known for \"I don't always..., but when I do...\". It is used for humorous exceptions.",
+    use: "Start with \"I don't always\" on top and finish with \"but when I do\" at the bottom.",
+  },
+  "Too Damn High": {
+    about: "Jimmy McMillan, founder of the \"Rent Is Too Damn High\" party, in a 2010 debate. It complains that something is far too much.",
+    use: "Name the thing on top and keep \"is too damn high\" at the bottom.",
+  },
+  "Dwight Schrute": {
+    about: "Dwight Schrute from The Office, known for correcting people with \"False.\" It is used for confident, nitpicking corrections.",
+    use: "Write the claim on top and Dwight's \"False.\" correction at the bottom.",
+  },
+  "Charlie Conspiracy (Always Sunny in Philidelphia)": {
+    about: "Charlie from It's Always Sunny in Philadelphia ranting in front of a wall of papers and string. It is about over-explaining a wild theory.",
+    use: "Write \"Me explaining\" on top and the thing you are over-explaining at the bottom.",
+  },
+  "Pepperidge Farm Remembers": {
+    about: "A gloomy old man from Family Guy saying \"Pepperidge Farm remembers\". It is used for nostalgia.",
+    use: "Ask \"Remember when...?\" on top and keep \"Pepperidge Farm remembers\" at the bottom.",
+  },
+  "Am I The Only One Around Here": {
+    about: "Walter Sobchak (John Goodman) from The Big Lebowski shouting in frustration. It complains that you are the only one doing something right.",
+    use: "Keep \"Am I the only one around here\" on top and finish the complaint at the bottom.",
+  },
+  "Sparta Leonidas": {
+    about: "King Leonidas (Gerard Butler) from the film 300 (2006) shouting \"This is Sparta!\". It is used for dramatic, over-the-top reactions.",
+    use: "Write the question or situation on top and the dramatic reply at the bottom.",
+  },
+  "Third World Success Kid": {
+    about: "A smiling, celebrating boy, used for captions about small victories.",
+    use: "Describe the small win across the top and bottom text.",
+  },
+  "Ermahgerd": {
+    about: "A girl excitedly holding books, with captions written in a goofy accent (\"Oh my god\" becomes \"Ermahgerd\"). It shows over-the-top excitement.",
+    use: "Write \"Ermahgerd\" on top and the exciting thing, misspelled the same way, at the bottom.",
+  },
 };

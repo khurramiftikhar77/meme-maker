@@ -114,6 +114,7 @@
         thumb: `${t.blank}${t.blank.includes('?') ? '&' : '?'}width=240`,
         boxes: t.lines || 2,
         keywords: (t.keywords || []).join(' '),
+        example: (t.example && Array.isArray(t.example.text)) ? t.example.text.map(memegenText) : [],
       }));
     },
 
@@ -140,6 +141,14 @@
       return out;
     },
   };
+
+  // Memegen writes captions in URL style: _ for spaces and ~q, ~a... for special characters.
+  function memegenText(text) {
+    let out = String(text || '');
+    if (!out.includes(' ')) out = out.replace(/__/g, '\u0000').replace(/_/g, ' ').replace(/\u0000/g, '_');
+    return out.replace(/~q/g, '?').replace(/~a/g, '&').replace(/~p/g, '%').replace(/~h/g, '#')
+      .replace(/~s/g, '/').replace(/~b/g, '\\').replace(/''/g, '"').trim();
+  }
 
   async function fetchJson(url) {
     const res = await fetch(url);
@@ -278,7 +287,7 @@
       .then(({ img, exportable }) => {
         const builtIn = findBuiltIn(t.name);
         setImage(img, t.name, exportable, t.boxes, builtIn?.b);
-        showIdeas(builtIn);
+        showIdeas(builtIn, t);
         showEditor();
         showToast(exportable ? '' : 'This image blocks downloads from other sites. Try another template.');
         return true;
@@ -358,7 +367,7 @@
       URL.revokeObjectURL(url);
       const name = file.name.replace(/\.[^.]+$/, '') || 'meme';
       setImage(downscale(img), name, true, 2);
-      showIdeas(null);
+      showIdeas(null, { name: `${file.name} ${file.size}` });
       showEditor();
       showToast('');
     };
@@ -1139,25 +1148,78 @@
     }));
   }
 
-  function genericIdeas(boxes) {
-    return (window.MEME_GENERIC || []).map(([top, bottom]) => {
-      if (boxes === 1) return [`${top} ${bottom}`];
-      return [top, ...Array(Math.max(0, boxes - 2)).fill(''), bottom];
-    });
+  // Stable pseudo-random order per template, so each meme gets its own mix of ideas.
+  function seededShuffle(list, seedText) {
+    let seed = 2166136261;
+    for (const ch of seedText) seed = Math.imul(seed ^ ch.charCodeAt(0), 16777619);
+    const random = () => {
+      seed = (seed + 0x6D2B79F5) | 0;
+      let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+    const out = [...list];
+    for (let i = out.length - 1; i > 0; i--) {
+      const j = Math.floor(random() * (i + 1));
+      [out[i], out[j]] = [out[j], out[i]];
+    }
+    return out;
   }
 
-  // Popular templates get their own ideas, filled in straight away; everything else gets general ideas.
-  function showIdeas(builtIn) {
+  // Fit an idea to the number of text boxes: first line on top, last line at the bottom.
+  function fitIdea(texts, boxes) {
+    const lines = texts.map((t) => String(t || '').trim());
+    if (boxes === 1) return [lines.filter(Boolean).join(' ')];
+    if (lines.length === boxes) return lines;
+    if (lines.length > boxes) return [...lines.slice(0, boxes - 1), lines.slice(boxes - 1).filter(Boolean).join(' ')];
+    return [...lines.slice(0, -1), ...Array(boxes - lines.length).fill(''), lines[lines.length - 1]];
+  }
+
+  function themeIdeas(text) {
+    const words = new Set(String(text).toLowerCase().split(/[^a-z]+/).filter(Boolean));
+    const has = (w) => words.has(w) || words.has(`${w}s`);
+    return Object.values(window.MEME_IDEAS?.themes || {})
+      .filter((theme) => theme.words.some(has))
+      .flatMap((theme) => theme.ideas);
+  }
+
+  // Ideas for a template without its own captions: its Memegen example, themed ideas
+  // matching its name, then general ideas for its number of text boxes.
+  function ideasFor(template, boxes) {
+    const pools = window.MEME_IDEAS || { two: [], one: [], three: [], four: [] };
+    const seed = template?.name || 'meme';
+    const general = boxes === 1 ? [...pools.one, ...pools.two]
+      : boxes === 2 ? pools.two
+        : boxes === 3 ? [...pools.three, ...pools.two]
+          : [...pools.four, ...pools.three];
+    const ideas = [];
+    if (template?.example?.some((t) => String(t).trim())) ideas.push(template.example);
+    // Templates with 3+ boxes lead with ideas written for that many boxes.
+    if (boxes >= 3) ideas.push(...seededShuffle(boxes === 3 ? pools.three : pools.four, seed).slice(0, 4));
+    ideas.push(...seededShuffle(themeIdeas(`${template?.name || ''} ${template?.keywords || ''}`), seed).slice(0, 6));
+    ideas.push(...seededShuffle(general, seed));
+
+    const seen = new Set();
+    return ideas
+      .map((idea) => fitIdea(idea, boxes))
+      .filter((idea) => {
+        const key = idea.join('|').toLowerCase();
+        if (!idea.some(Boolean) || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      })
+      .slice(0, 10);
+  }
+
+  // Every picture opens with the first idea filled in and more to pick from.
+  function showIdeas(builtIn, template) {
     els.ideas.hidden = false;
-    if (builtIn) {
-      renderIdeas(builtIn.c);
-      applyTexts(builtIn.c[0]);
-      els.ideaList.querySelector('.idea')?.classList.add('is-active');
-      els.ideasStatus.textContent = 'Click an idea to use it, or click the text on the image to write your own.';
-    } else {
-      renderIdeas(genericIdeas(Math.max(1, Math.min(6, state.layers.length || 2))));
-      els.ideasStatus.textContent = 'General ideas that work on most pictures. Click one to use it, or click the text on the image to write your own.';
-    }
+    const boxes = Math.max(1, Math.min(6, state.layers.length || 2));
+    const ideas = builtIn ? builtIn.c : ideasFor(template, boxes);
+    renderIdeas(ideas);
+    applyTexts(ideas[0]);
+    els.ideaList.querySelector('.idea')?.classList.add('is-active');
+    els.ideasStatus.textContent = 'Tap an idea to use it, or tap the text on the image to write your own.';
   }
 
   /* ---------------------------------------------------------------- */

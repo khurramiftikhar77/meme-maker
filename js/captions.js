@@ -878,20 +878,284 @@ window.MEME_CAPTIONS = [
       ['When you check the fridge', 'for the 5th time'],
     ],
   },
-];
-
-// Fallback ideas for templates without their own list (two text boxes, top and bottom).
-window.MEME_GENERIC = [
-  ['Me: I will sleep early tonight', 'Also me at 3am:'],
-  ['When the code works', 'and you do not know why'],
-  ['Nobody:', 'Absolutely nobody:'],
-  ['Me after one productive hour', 'time for a 3 hour break'],
-  ['When someone says', 'it will only take 5 minutes'],
-  ['Monday me', 'Friday me'],
-  ['When the wifi', 'disconnects for one second'],
-  ['Me pretending to listen', 'thinking about food'],
-  ['When the teacher says', 'find a partner'],
-  ['Me seeing my bank account', 'after the weekend'],
-  ['When you finally', 'find the TV remote'],
-  ['My plans', 'my motivation'],
+  {
+    names: ["Bike Fall", "Bicycle Fall", "Stick In Bike Wheel"],
+    c: [
+      ["Me", "Staying up until 3am", "Why am I always tired?"],
+      ["Me", "Not studying", "Why are exams so hard?"],
+      ["Developers", "Pushing on Friday", "Why is production down?"],
+      ["Me", "Buying snacks", "Why can't I save money?"],
+      ["Me", "Saying \"five more minutes\"", "Why am I always late?"],
+    ],
+  },
+  {
+    names: ["The Rock Driving", "Rock Driving"],
+    c: [
+      ["What is your favourite day?", "Monday"],
+      ["Did you save the file?", "What file?"],
+      ["Want to hear my plan?", "I have not slept in 3 days"],
+      ["How much did you spend?", "Only a little, on everything"],
+      ["Did you do the homework?", "Which homework?"],
+    ],
+  },
+  {
+    names: ["Marked Safe From"],
+    c: [
+      ["Marked safe from", "Monday morning meetings"],
+      ["Marked safe from", "doing the dishes today"],
+      ["Marked safe from", "small talk at the party"],
+      ["Marked safe from", "the group project"],
+      ["Marked safe from", "being productive today"],
+    ],
+  },
+  {
+    names: ["Confused Gandalf", "Gandalf No Memory"],
+    c: [
+      ["When you open your old code", "I have no memory of this place"],
+      ["Me reading my own notes", "before the exam"],
+      ["When someone says", "remember when we met?"],
+      ["Me walking into a room", "and forgetting why"],
+      ["Monday me", "looking at Friday me's to-do list"],
+    ],
+  },
+  {
+    names: ["Kombucha Girl"],
+    c: [
+      ["Trying a new food", "Actually liking it"],
+      ["Hearing the new song once", "Hearing it a fifth time"],
+      ["Monday", "Remembering Friday exists"],
+      ["Opening the bill", "Seeing the discount"],
+      ["Starting the gym", "Seeing the results"],
+    ],
+  },
+  {
+    names: ["Shut Up And Take My Money Fry", "Shut Up And Take My Money"],
+    c: [
+      ["A pillow that is always cold", "Shut up and take my money"],
+      ["Pizza that delivers itself", "Shut up and take my money"],
+      ["A 4 day work week", "Shut up and take my money"],
+      ["Socks that never get lost", "Shut up and take my money"],
+      ["An alarm that lets me sleep in", "Shut up and take my money"],
+    ],
+  },
+  {
+    names: ["Black Girl Wat", "Wat Girl"],
+    c: [
+      ["When someone says", "pineapple pizza is the best"],
+      ["When the teacher says", "the exam is open book but you still fail"],
+      ["When someone says", "they reply to emails on weekends"],
+      ["When someone says", "they do not like weekends"],
+      ["When they say", "the meeting is mandatory and unpaid"],
+    ],
+  },
+  {
+    names: ["Domino Effect"],
+    c: [
+      ["One \"small\" bug fix", "The whole app breaking"],
+      ["Skipping breakfast", "Ordering a giant lunch"],
+      ["One more episode", "Missing the morning alarm"],
+      ["Saying yes once", "Becoming the office IT guy"],
+      ["Buying one plant", "Owning a jungle"],
+    ],
+  },
+  {
+    names: ["Imagination Spongebob", "Spongebob Imagination", "Spongebob Rainbow"],
+    c: [
+      ["Free entertainment", "Imagination"],
+      ["How I will pay my bills", "Imagination"],
+      ["My plans for the weekend", "Imagination"],
+      ["How I finished the essay", "Imagination"],
+      ["My gym progress", "Imagination"],
+    ],
+  },
+  {
+    names: ["Disappointed Black Guy", "Disappointed Guy"],
+    c: [
+      ["When the \"free\" app", "has a subscription"],
+      ["When the movie", "is nothing like the book"],
+      ["When you order the big pizza", "and it is still small"],
+      ["When the sequel", "ruins the first movie"],
+      ["When the fries", "are cold"],
+    ],
+  },
+  {
+    names: ["Sweating Jordan Peele", "Jordan Peele Sweating", "Key And Peele Sweating"],
+    c: [
+      ["When the teacher asks", "who has not done the homework"],
+      ["Me at the airport", "not sure if my bag is overweight"],
+      ["When the boss says", "can you show me your screen"],
+      ["When mom asks", "who broke the vase"],
+      ["Me watching a movie with my parents", "when a kissing scene starts"],
+    ],
+  },
+  {
+    names: ["Sad Affleck", "Sad Ben Affleck"],
+    c: [
+      ["When the weekend", "is over already"],
+      ["Hearing your own voice", "in a recording"],
+      ["When the sequel", "is announced and then cancelled"],
+      ["When your favourite show", "gets a bad ending"],
+      ["When you remember", "tomorrow is Monday"],
+    ],
+  },
+  {
+    names: ["Crying Michael Jordan", "Crying Jordan"],
+    c: [
+      ["When your team", "loses in the final minute"],
+      ["When the pizza", "falls cheese side down"],
+      ["When the exam results", "come out"],
+      ["When the server", "goes down on launch day"],
+      ["When you see the price", "after tax"],
+    ],
+  },
+  {
+    names: ["Overly Attached Girlfriend"],
+    c: [
+      ["I saw you went online", "why did you not text me"],
+      ["I made us matching profiles", "so we can always be together"],
+      ["You said see you later", "so I am outside"],
+      ["I read your messages", "just to check on you"],
+      ["I have saved your number", "under \"forever\""],
+    ],
+  },
+  {
+    names: ["Scumbag Steve"],
+    c: [
+      ["Borrows your charger", "gives it back with 1% battery"],
+      ["Eats your leftovers", "leaves the empty box in the fridge"],
+      ["Says he will pay you back", "moves to another city"],
+      ["Joins the group project", "on presentation day"],
+      ["Asks to borrow a pen", "keeps it forever"],
+    ],
+  },
+  {
+    names: ["Good Guy Greg"],
+    c: [
+      ["Borrows your car", "returns it with a full tank"],
+      ["Sees you have no lunch", "shares his"],
+      ["Joins the group project", "does the whole thing"],
+      ["Eats the last slice", "orders another pizza"],
+      ["Sends you a meme", "explains it when you do not get it"],
+    ],
+  },
+  {
+    names: ["Socially Awkward Penguin", "Awkward Penguin"],
+    c: [
+      ["Someone says \"have a good flight\"", "\"you too\""],
+      ["Sees someone I know in the shop", "hides behind the cereal"],
+      ["Gets a phone call", "lets it ring until it stops"],
+      ["Someone waves", "waves back at the person behind me"],
+      ["Rehearses ordering pizza", "still says it wrong"],
+    ],
+  },
+  {
+    names: ["Insanity Wolf"],
+    c: [
+      ["Eats cereal", "with orange juice"],
+      ["Sleeps 2 hours", "goes to the gym twice"],
+      ["Charges phone", "to 101%"],
+      ["Microwaves leftovers", "for 40 minutes"],
+      ["Reads the ending first", "then the beginning"],
+    ],
+  },
+  {
+    names: ["Conspiracy Keanu"],
+    c: [
+      ["What if the fridge light", "stays on when the door is closed"],
+      ["What if socks disappear", "because they are going home"],
+      ["What if we are the aliens", "and they are just visiting"],
+      ["What if the snooze button", "is a test"],
+      ["What if cats know", "and they are just not telling us"],
+    ],
+  },
+  {
+    names: ["The Most Interesting Man In The World", "Most Interesting Man"],
+    c: [
+      ["I do not always eat vegetables", "but when I do, they are on a pizza"],
+      ["I do not always wake up early", "but when I do, I go back to sleep"],
+      ["I do not always test my code", "but when I do, I do it in production"],
+      ["I do not always read the instructions", "but when I do, it is after I broke it"],
+      ["I do not always go to the gym", "but when I do, I post about it"],
+    ],
+  },
+  {
+    names: ["Too Damn High", "The Rent Is Too Damn High"],
+    c: [
+      ["The rent", "is too damn high"],
+      ["The price of coffee", "is too damn high"],
+      ["The number of meetings", "is too damn high"],
+      ["My screen time", "is too damn high"],
+      ["The pile of laundry", "is too damn high"],
+    ],
+  },
+  {
+    names: ["Dwight Schrute", "Dwight False"],
+    c: [
+      ["Naps are a waste of time", "False. Naps are a lifestyle"],
+      ["Coffee is just a drink", "False. It is a personality"],
+      ["Monday is a normal day", "False"],
+      ["You only need one charger", "False. You need one in every room"],
+      ["One slice is enough", "False"],
+    ],
+  },
+  {
+    names: ["Charlie Conspiracy (Always Sunny in Philidelphia)", "Charlie Conspiracy", "Pepe Silvia"],
+    c: [
+      ["Me explaining", "why I need another hoodie"],
+      ["Me explaining", "where my money went this month"],
+      ["Me explaining", "the plot of the show I just started"],
+      ["Me explaining", "why the bug is not my fault"],
+      ["Me explaining", "the group chat drama"],
+    ],
+  },
+  {
+    names: ["Pepperidge Farm Remembers"],
+    c: [
+      ["Remember when phones had buttons?", "Pepperidge Farm remembers"],
+      ["Remember when we had summer holidays?", "Pepperidge Farm remembers"],
+      ["Remember when rent was affordable?", "Pepperidge Farm remembers"],
+      ["Remember when the internet made a noise?", "Pepperidge Farm remembers"],
+      ["Remember when I had free time?", "Pepperidge Farm remembers"],
+    ],
+  },
+  {
+    names: ["Am I The Only One Around Here", "Walter Sobchak"],
+    c: [
+      ["Am I the only one around here", "who puts the dishes in the dishwasher?"],
+      ["Am I the only one around here", "who reads the whole email?"],
+      ["Am I the only one around here", "who replaces the toilet paper?"],
+      ["Am I the only one around here", "who mutes their mic?"],
+      ["Am I the only one around here", "who returns shopping carts?"],
+    ],
+  },
+  {
+    names: ["Sparta Leonidas", "This Is Sparta"],
+    c: [
+      ["Monday?", "This is Sparta!"],
+      ["Is it the weekend yet?", "This is Sparta!"],
+      ["Five more minutes?", "This is Sparta!"],
+      ["Leg day already?", "This is Sparta!"],
+      ["Another meeting?", "This is Sparta!"],
+    ],
+  },
+  {
+    names: ["Third World Success Kid"],
+    c: [
+      ["Found wifi", "without a password"],
+      ["Charger reaches", "the bed"],
+      ["Remembered my password", "on the first try"],
+      ["Dropped my phone", "screen still fine"],
+      ["Microwave stopped", "at exactly 0:01"],
+    ],
+  },
+  {
+    names: ["Ermahgerd", "Ermahgerd Girl"],
+    c: [
+      ["Ermahgerd", "perzza"],
+      ["Ermahgerd", "werkend"],
+      ["Ermahgerd", "merms"],
+      ["Ermahgerd", "berks"],
+      ["Ermahgerd", "derg"],
+    ],
+  },
 ];
