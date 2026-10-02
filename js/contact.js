@@ -4,7 +4,7 @@
 
   // Web3Forms access key. It is public by design: it can only send messages to the inbox
   // it was created for, so it is safe in the page. Replace it to deliver to another inbox.
-  const WEB3FORMS_KEY = 'ac95d83d-5ac2-4cc1-b0a2-a431b58b1111';
+  const WEB3FORMS_KEY = 'a0c9cd86-ac81-4200-a287-8c8837616a0e';  // delivers to mememaker@khurramiftikhar.com
   const EMAIL = 'mememaker@khurramiftikhar.com';
 
   const form = document.getElementById('contact-form');
