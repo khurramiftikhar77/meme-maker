@@ -93,8 +93,22 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 
 @media (max-width: 760px) {
-  .layout { grid-template-columns: minmax(0, 1fr); }
-  .stage-panel { order: -1; }
+  .layout { grid-template-columns: minmax(0, 1fr); padding: 12px; gap: 12px; }
+  /* Before a picture is chosen, the template list comes first... */
+  .source { order: 1; }
+  .stage-panel { order: 2; }
+  .props { order: 3; }
+  /* ...after that, the meme and its text settings come first. */
+  .has-image .stage-panel { order: 1; }
+  .has-image .props { order: 2; }
+  .has-image .source { order: 3; }
+
+  .topbar { gap: 8px 12px; padding: 10px 12px; }
+  .brand { font-size: 22px; }
+  .tabs { order: 3; width: 100%; }
+  .tab { flex: 1; }
+  .layout .stage { min-height: 200px; }
+  .stage canvas { max-height: 60vh; }
 }
 
 /* Source panel */
@@ -268,6 +282,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .text-editor[hidden] { display: none; }
 
 /* Stage */
+.stage canvas[hidden] { display: none; }
 .stage {
   position: relative;
   display: flex;
@@ -284,6 +299,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   display: block;
   max-width: 100%;
   max-height: calc(100vh - 190px);
+  max-height: calc(100svh - 190px);
   touch-action: none;
   cursor: default;
 }
@@ -496,3 +512,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .home-template-links a, .footer-links a { color: var(--accent); }
 .home-template-links { font-size: 14px; }
 .page a.btn-primary { color: var(--accent-text); text-decoration: none; }
+
+/* Adding text boxes */
+#addTextBtn:not(:disabled) { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.props-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+.props-head h2 { margin: 0; }
+.props-head .btn { padding: 6px 12px; font-size: 13px; }

@@ -28,6 +28,7 @@
     canvas: $('#canvas'),
     emptyState: $('#emptyState'),
     addTextBtn: $('#addTextBtn'),
+    addTextBtn2: $('#addTextBtn2'),
     copyBtn: $('#copyBtn'),
     shareBtn: $('#shareBtn'),
     downloadBtn: $('#downloadBtn'),
@@ -278,6 +279,7 @@
         const builtIn = findBuiltIn(t.name);
         setImage(img, t.name, exportable, t.boxes, builtIn?.b);
         showIdeas(builtIn);
+        showEditor();
         showToast(exportable ? '' : 'This image blocks downloads from other sites. Try another template.');
         return true;
       })
@@ -357,6 +359,7 @@
       const name = file.name.replace(/\.[^.]+$/, '') || 'meme';
       setImage(downscale(img), name, true, 2);
       showIdeas(null);
+      showEditor();
       showToast('');
     };
     img.onerror = () => {
@@ -416,7 +419,8 @@
     }
     select(state.layers[0].id);
 
-    [els.addTextBtn, els.copyBtn, els.shareBtn, els.downloadBtn].forEach((b) => { b.disabled = false; });
+    [els.addTextBtn, els.addTextBtn2, els.copyBtn, els.shareBtn, els.downloadBtn].forEach((b) => { b.disabled = false; });
+    document.body.classList.add('has-image');
     els.copyBtn.disabled = els.shareBtn.disabled = els.downloadBtn.disabled = !exportable;
   }
 
@@ -545,9 +549,20 @@
     requestRender();
   });
 
-  els.addTextBtn.addEventListener('click', () => {
-    startEditing(addLayer(), { selectAll: true });
-  });
+  // Two "Add text box" buttons: under the image and in the Text panel.
+  [els.addTextBtn, els.addTextBtn2].forEach((btn) => btn.addEventListener('click', () => {
+    const layer = addLayer();
+    showEditor();
+    startEditing(layer, { selectAll: true });
+  }));
+
+  // On phones the editor sits above or below other panels; bring the meme into view.
+  function showEditor() {
+    if (!window.matchMedia('(max-width: 760px)').matches) return;
+    const panel = els.canvas.closest('.stage-panel');
+    const top = panel.getBoundingClientRect().top + window.scrollY - 8;
+    window.scrollTo({ top, behavior: 'smooth' });
+  }
   els.duplicateBtn.addEventListener('click', duplicateSelected);
   els.deleteBtn.addEventListener('click', removeSelected);
 

@@ -66,7 +66,7 @@
         <canvas id="canvas" role="img" aria-label="Meme preview" hidden></canvas>
       </div>
       <div class="stage-actions">
-        <button id="addTextBtn" class="btn" disabled>+ Add text</button>
+        <button id="addTextBtn" class="btn" disabled>+ Add text box</button>
         <span class="spacer"></span>
         <button id="copyBtn" class="btn" disabled>Copy</button>
         <button id="shareBtn" class="btn" disabled hidden>Share</button>
@@ -85,7 +85,10 @@
 
     <!-- Text properties -->
     <aside class="panel props">
-      <h2>Text</h2>
+      <div class="props-head">
+        <h2>Text</h2>
+        <button id="addTextBtn2" class="btn" type="button" disabled>+ Add text box</button>
+      </div>
       <ul id="layerList" class="layer-list"></ul>
       <p id="noSelection" class="muted small">Select a text box on the image to edit it.</p>
 
