@@ -1,21 +1,21 @@
-// Serves the static meme maker: renders template images into template pages, keeps the
-// workers.dev copy out of search results, and adds Google AdSense once configured.
+// Serves the static meme maker: renders template images into template pages, sends the
+// workers.dev address to the real domain, and adds Google AdSense once configured.
+const SITE_HOST = 'mememaker.khurramiftikhar.com';
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    // The workers.dev address only redirects, so the site is reachable at one address.
+    if (url.hostname.endsWith('.workers.dev')) {
+      return Response.redirect(`https://${SITE_HOST}${url.pathname}${url.search}`, 301);
+    }
     if (url.pathname === '/ads.txt') return adsTxt(env);
 
     let response = await env.ASSETS.fetch(request);
     if (!(response.headers.get('content-type') || '').includes('text/html')) return response;
 
     if (url.pathname.startsWith('/templates/')) response = await withTemplateImage(response);
-    response = withAds(response, env);
-    if (url.hostname.endsWith('.workers.dev')) {
-      // Duplicate of the real domain: let people use it but keep it out of Google.
-      response = new Response(response.body, response);
-      response.headers.set('X-Robots-Tag', 'noindex');
-    }
-    return response;
+    return withAds(response, env);
   },
 };
 
