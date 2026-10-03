@@ -17,7 +17,7 @@
 </head>
 <body>
   <header class="topbar">
-    <h1 class="brand">Meme<span>Maker</span></h1>
+    <h1 class="brand"><a href="/" aria-label="Meme Maker home">Meme<span>Maker</span></a></h1>
     <nav class="tabs" role="tablist">
       <button class="tab is-active" role="tab" aria-selected="true" data-tab="search">Search memes</button>
       <button class="tab" role="tab" aria-selected="false" data-tab="upload">Upload picture</button>
@@ -63,6 +63,7 @@
         <canvas id="canvas" role="img" aria-label="Meme preview" hidden></canvas>
       </div>
       <div class="stage-actions">
+        <button id="changeTemplateBtn" class="btn change-template" type="button" hidden>&larr; Change template</button>
         <button id="addTextBtn" class="btn" disabled>+ Add text box</button>
         <span class="spacer"></span>
         <button id="copyBtn" class="btn" disabled>Copy</button>

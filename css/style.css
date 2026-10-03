@@ -554,3 +554,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
 @media (max-width: 560px) {
   .contact-form .field-row { grid-template-columns: 1fr; }
 }
+
+/* Only phones need the "Change template" button: on wide screens the list is beside the meme. */
+.change-template { display: none; }
+@media (max-width: 760px) {
+  .change-template:not([hidden]) { display: inline-block; }
+  .stage-actions .change-template { flex-basis: 100%; }
+}

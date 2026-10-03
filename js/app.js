@@ -29,6 +29,7 @@
     emptyState: $('#emptyState'),
     addTextBtn: $('#addTextBtn'),
     addTextBtn2: $('#addTextBtn2'),
+    changeTemplateBtn: $('#changeTemplateBtn'),
     copyBtn: $('#copyBtn'),
     shareBtn: $('#shareBtn'),
     downloadBtn: $('#downloadBtn'),
@@ -430,6 +431,7 @@
 
     [els.addTextBtn, els.addTextBtn2, els.copyBtn, els.shareBtn, els.downloadBtn].forEach((b) => { b.disabled = false; });
     document.body.classList.add('has-image');
+    els.changeTemplateBtn.hidden = false;
     els.copyBtn.disabled = els.shareBtn.disabled = els.downloadBtn.disabled = !exportable;
   }
 
@@ -572,6 +574,13 @@
     const top = panel.getBoundingClientRect().top + window.scrollY - 8;
     window.scrollTo({ top, behavior: 'smooth' });
   }
+  // Phones: jump back up to the template list without losing the meme being edited.
+  els.changeTemplateBtn.addEventListener('click', () => {
+    const panel = document.querySelector('.source');
+    const top = panel.getBoundingClientRect().top + window.scrollY - 8;
+    window.scrollTo({ top, behavior: 'smooth' });
+  });
+
   els.duplicateBtn.addEventListener('click', duplicateSelected);
   els.deleteBtn.addEventListener('click', removeSelected);
 
