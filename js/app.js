@@ -54,6 +54,7 @@
     ideas: $('#ideas'),
     ideasStatus: $('#ideasStatus'),
     ideaList: $('#ideaList'),
+    ideaFilters: $('#ideaFilters'),
   };
 
   const ctx = els.canvas.getContext('2d');
@@ -1220,15 +1221,74 @@
       .slice(0, 10);
   }
 
+  // Audience filters (Developers, Office life, ...). The choice stays while templates change
+  // (nothing is stored), and the /work-memes/ pages link to the editor with ?ideas=<id>.
+  const AUDIENCES = window.MEME_AUDIENCES || [];
+  let ideaFilter = new URLSearchParams(location.search).get('ideas') || 'all';
+  let ideaContext = null;
+  if (!AUDIENCES.some((a) => a.id === ideaFilter)) ideaFilter = 'all';
+
+  function renderIdeaFilters() {
+    const options = [{ id: 'all', label: 'All ideas' }, ...AUDIENCES];
+    els.ideaFilters.replaceChildren(...options.map((option) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'idea-filter';
+      btn.textContent = option.label;
+      btn.setAttribute('aria-pressed', String(option.id === ideaFilter));
+      btn.addEventListener('click', () => {
+        ideaFilter = option.id;
+        renderIdeaFilters();
+        if (ideaContext) showCurrentIdeas();
+      });
+      return btn;
+    }));
+  }
+
+  // The open template's own ideas for an audience, or general ones for it when it has none.
+  function audienceIdeas(audience, builtIn) {
+    return audience.keys.flatMap((k) => builtIn?.a?.[k] || []);
+  }
+
+  function generalAudienceIdeas(audience, template, boxes) {
+    const general = audience.keys.flatMap((k) => window.MEME_IDEAS?.audiences?.[k] || []);
+    return seededShuffle(general, template?.name || 'meme').map((idea) => fitIdea(idea, boxes));
+  }
+
+  const IDEAS_HINT = 'Tap an idea to use it, or tap the text on the image to write your own.';
+
+  // The ideas for the open picture under the chosen filter, and the hint to show with them.
+  function currentIdeas() {
+    const { builtIn, template, boxes } = ideaContext;
+    const audience = AUDIENCES.find((a) => a.id === ideaFilter);
+    if (audience) {
+      const own = audienceIdeas(audience, builtIn);
+      if (own.length) return { ideas: own, hint: IDEAS_HINT };
+      return {
+        ideas: generalAudienceIdeas(audience, template, boxes),
+        hint: `General ${audience.label.toLowerCase()} ideas, since this template has none of its own yet. ${IDEAS_HINT}`,
+      };
+    }
+    if (!builtIn) return { ideas: ideasFor(template, boxes), hint: IDEAS_HINT };
+    return { ideas: [...builtIn.c, ...AUDIENCES.flatMap((a) => audienceIdeas(a, builtIn))], hint: IDEAS_HINT };
+  }
+
+  function showCurrentIdeas() {
+    const { ideas, hint } = currentIdeas();
+    renderIdeas(ideas);
+    els.ideasStatus.textContent = hint;
+    return ideas;
+  }
+
   // Every picture opens with the first idea filled in and more to pick from.
   function showIdeas(builtIn, template) {
     els.ideas.hidden = false;
     const boxes = Math.max(1, Math.min(6, state.layers.length || 2));
-    const ideas = builtIn ? builtIn.c : ideasFor(template, boxes);
-    renderIdeas(ideas);
+    ideaContext = { builtIn, template, boxes };
+    renderIdeaFilters();
+    const ideas = showCurrentIdeas();
     applyTexts(ideas[0]);
     els.ideaList.querySelector('.idea')?.classList.add('is-active');
-    els.ideasStatus.textContent = 'Tap an idea to use it, or tap the text on the image to write your own.';
   }
 
   /* ---------------------------------------------------------------- */
