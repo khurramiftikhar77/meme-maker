@@ -1221,7 +1221,7 @@
       .slice(0, 10);
   }
 
-  /* Topic packs (js/topics.js): Product & agile, Project management, LinkedIn, Parenthood. */
+  /* Topic packs (js/topics.js): the labels and captions live there; buttons are built from it. */
 
   const TOPICS = window.MEME_TOPICS || {};
   const TOPIC_KEY = 'meme-maker-topic';
