@@ -54,6 +54,7 @@
     ideas: $('#ideas'),
     ideasStatus: $('#ideasStatus'),
     ideaList: $('#ideaList'),
+    topicPicker: $('#topicPicker'),
   };
 
   const ctx = els.canvas.getContext('2d');
@@ -1149,7 +1150,7 @@
         btn.append(line);
       });
       btn.addEventListener('click', () => {
-        applyTexts(texts);
+        useIdea(texts);
         els.ideaList.querySelectorAll('.idea').forEach((b) => b.classList.toggle('is-active', b === btn));
       });
       li.append(btn);
@@ -1220,15 +1221,86 @@
       .slice(0, 10);
   }
 
+  /* Topic packs (js/topics.js): Product & agile, Project management, LinkedIn, Parenthood. */
+
+  const TOPICS = window.MEME_TOPICS || {};
+  const TOPIC_KEY = 'meme-maker-topic';
+  let currentTopic = 'general';
+  try {
+    const saved = localStorage.getItem(TOPIC_KEY);
+    if (saved && TOPICS[saved]) currentTopic = saved;
+  } catch { /* storage blocked: keep the default */ }
+
+  let openMeme = null;      // { builtIn, template } of the picture being edited
+  let lastApplied = null;   // the idea last put on the image, to tell it apart from the user's own text
+
+  function useIdea(texts) {
+    applyTexts(texts);
+    lastApplied = orderedLayers().map((l) => l.text);
+  }
+
+  // True while the text on the image is still an idea we filled in, not the user's own words.
+  function textIsOurs() {
+    const now = orderedLayers().map((l) => l.text);
+    return !lastApplied || (now.length === lastApplied.length && now.every((t, i) => t === lastApplied[i]));
+  }
+
+  function topicIdeas(topic, builtIn, template, boxes) {
+    const seed = `${template?.name || 'meme'}:${currentTopic}`;
+    const pool = boxes === 1 ? [...topic.one, ...topic.two]
+      : boxes === 2 ? topic.two
+        : boxes === 3 ? [...topic.three, ...topic.two]
+          : [...topic.four, ...topic.three];
+    const specific = builtIn ? topic.templates[builtIn.names[0]] || [] : [];
+    const seen = new Set();
+    return [...specific, ...seededShuffle(pool, seed)]
+      .map((idea) => fitIdea(idea, boxes))
+      .filter((idea) => {
+        const key = idea.join('|').toLowerCase();
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      })
+      .slice(0, 12);
+  }
+
+  function renderTopicPicker() {
+    const options = [['general', 'General'], ...Object.entries(TOPICS).map(([key, t]) => [key, t.label])];
+    els.topicPicker.replaceChildren(...options.map(([key, label]) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'topic';
+      btn.textContent = label;
+      btn.setAttribute('aria-pressed', String(key === currentTopic));
+      btn.addEventListener('click', () => {
+        if (key === currentTopic) return;
+        currentTopic = key;
+        try { localStorage.setItem(TOPIC_KEY, key); } catch { /* ignore */ }
+        renderTopicPicker();
+        // Swap the caption on the image too, unless the user has written their own.
+        if (openMeme) showIdeas(openMeme.builtIn, openMeme.template, { fill: textIsOurs() });
+      });
+      return btn;
+    }));
+  }
+  renderTopicPicker();
+
   // Every picture opens with the first idea filled in and more to pick from.
-  function showIdeas(builtIn, template) {
+  function showIdeas(builtIn, template, { fill = true } = {}) {
+    openMeme = { builtIn, template };
     els.ideas.hidden = false;
     const boxes = Math.max(1, Math.min(6, state.layers.length || 2));
-    const ideas = builtIn ? builtIn.c : ideasFor(template, boxes);
+    const topic = TOPICS[currentTopic];
+    const ideas = topic ? topicIdeas(topic, builtIn, template, boxes)
+      : builtIn ? builtIn.c : ideasFor(template, boxes);
     renderIdeas(ideas);
-    applyTexts(ideas[0]);
-    els.ideaList.querySelector('.idea')?.classList.add('is-active');
-    els.ideasStatus.textContent = 'Tap an idea to use it, or tap the text on the image to write your own.';
+    if (fill) {
+      useIdea(ideas[0]);
+      els.ideaList.querySelector('.idea')?.classList.add('is-active');
+    }
+    els.ideasStatus.textContent = topic
+      ? `${topic.label} ideas. Tap one to use it, or tap the text on the image to write your own.`
+      : 'Tap an idea to use it, or tap the text on the image to write your own.';
   }
 
   /* ---------------------------------------------------------------- */

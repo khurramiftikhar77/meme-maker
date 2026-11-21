@@ -561,3 +561,24 @@ button, input, select, textarea { font: inherit; color: inherit; }
   .change-template:not([hidden]) { display: inline-block; }
   .stage-actions .change-template { flex-basis: 100%; }
 }
+
+/* Caption topic buttons */
+.topic-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 2px 0 8px;
+  margin-top: 8px;
+}
+.topic {
+  flex: 0 0 auto;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.topic:hover { border-color: var(--muted); }
+.topic[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-text); font-weight: 600; }
