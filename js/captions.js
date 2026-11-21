@@ -9,12 +9,21 @@
 //        office, parents), in the same format as `c`. The editor filters them with
 //        MEME_AUDIENCES and scripts/build-pages.mjs turns them into the /work-memes/ pages.
 
-// The audience filters shown above the caption ideas in the editor.
+// The caption idea filters shown above the ideas in the editor, after "All ideas".
+// id:      the ?ideas= value (the /work-memes/ pages link with it) and the remembered choice.
+// keys:    audience keys of the `a` captions here and of MEME_IDEAS.audiences in js/ideas.js.
+// topics:  topic packs in js/topics.js folded into the filter.
+// aliases: older topic pack names that still select the filter.
 window.MEME_AUDIENCES = [
   { id: 'dev', label: 'Developers', keys: ['dev'] },
-  { id: 'pm', label: 'Product & Project Managers', keys: ['product', 'project'] },
+  { id: 'pm', label: 'Product & Project Managers', keys: ['product', 'project'], topics: ['product', 'project'], aliases: ['product', 'project'] },
   { id: 'office', label: 'Office life', keys: ['office'] },
-  { id: 'parents', label: 'Parenting', keys: ['parents'] },
+  { id: 'parents', label: 'Parenting', keys: ['parents'], topics: ['parenthood'], aliases: ['parenthood'] },
+  { id: 'linkedin', label: 'LinkedIn', topics: ['linkedin'] },
+  { id: 'ai', label: 'AI', topics: ['ai'] },
+  { id: 'expat', label: 'Expat life', topics: ['expat'] },
+  { id: 'desi', label: 'Desi in Europe', topics: ['desi'] },
+  { id: 'oida', label: 'Oida', topics: ['oida'] },
 ];
 
 window.MEME_CAPTIONS = [

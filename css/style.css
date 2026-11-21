@@ -225,6 +225,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 .idea-filters { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .idea-filter {
+  flex: 0 0 auto;
+  white-space: nowrap;
   background: var(--panel-2);
   border: 1px solid var(--border);
   border-radius: 999px;
