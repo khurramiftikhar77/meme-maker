@@ -802,6 +802,7 @@ window.MEME_CAPTIONS = [
   },
   {
     names: ['Mother Ignoring Kid Drowning In A Pool'],
+    b: [[0.84, 0.1, 0.3, 0.045], [0.55, 0.06, 0.3, 0.045], [0.2, 0.36, 0.36, 0.045]],
     c: [
       ['Me', 'My new project', 'My old projects'],
       ['Me', 'New phone', 'Old phone'],
@@ -864,10 +865,12 @@ window.MEME_CAPTIONS = [
   },
   {
     names: ['Boardroom Meeting Suggestion'],
+    b: [[0.6, 0.075, 0.42, 0.035], [0.13, 0.38, 0.2, 0.028], [0.35, 0.38, 0.2, 0.028], [0.67, 0.39, 0.26, 0.028]],
     c: [
-      ['How do we fix the bug?', 'Add more tests', 'Read the logs', 'Delete the feature', ''],
-      ['How do we save money?', 'Budget better', 'Cook at home', 'Stop buying snacks', ''],
-      ['How do we improve morale?', 'Pizza party', 'Bonuses', 'Fewer meetings', ''],
+      ['How do we fix the bug?', 'Add more tests', 'Read the logs', 'Delete the feature'],
+      ['How do we save money?', 'Budget better', 'Cook at home', 'Stop buying snacks'],
+      ['How do we improve morale?', 'Pizza party', 'Bonuses', 'Fewer meetings'],
+      ['How do we hit the deadline?', 'Work weekends', 'Hire more people', 'Cut the scope'],
     ],
   },
   {
@@ -1156,6 +1159,282 @@ window.MEME_CAPTIONS = [
       ["Ermahgerd", "merms"],
       ["Ermahgerd", "berks"],
       ["Ermahgerd", "derg"],
+    ],
+  },
+  /* Newer and work-friendly templates (hand-picked, see js/featured.js). */
+  {
+    names: ['Chill Guy', 'Just A Chill Guy'],
+    c: [
+      ['Everyone panicking about the reorg', 'Me, a chill guy who updated his CV in March'],
+      ['Prod is down and the CEO joined the channel', 'Me, a chill guy who is on holiday'],
+      ['Deadline moved up by 2 weeks', 'Me, a chill guy with 0 tasks in Jira'],
+      ['When the recruiter asks for my salary expectations', 'Just a chill guy asking for 30% more'],
+    ],
+  },
+  {
+    names: ['Two Soyjaks Pointing', 'Soyjak Pointing'],
+    b: [[0.5, 0.07, 0.9, 0.06], [0.5, 0.93, 0.9, 0.06]],
+    c: [
+      ['Leadership seeing the word "AI" in a pitch deck', ''],
+      ['LinkedIn when someone posts', '"I\'m thrilled to announce"'],
+      ['Stakeholders seeing a Gantt chart', 'with colours'],
+      ['Me seeing a job post', 'that lists the salary'],
+    ],
+  },
+  {
+    names: ['Confused Math Lady', 'Math Lady', 'Calculating Meme'],
+    c: [
+      ['Me trying to work out', 'what "we\'re a family here" means in my payslip'],
+      ['Me reading the new org chart', 'to find out who my boss is'],
+      ['Me calculating', 'how many meetings I can skip without anyone noticing'],
+      ['When the job post says "entry level"', 'and asks for 5 years of experience'],
+    ],
+  },
+  {
+    names: ['Gigachad', 'Giga Chad'],
+    c: [
+      ['Declines the meeting', 'Without giving a reason'],
+      ['Writes "No" in the email', 'And nothing else'],
+      ['Logs off at 17:00', 'Slack still green on his phone? No.'],
+      ['Posts on LinkedIn', 'Without "Agree?" at the end'],
+    ],
+  },
+  {
+    names: ['Pedro Pascal Laughing Then Crying', 'Pedro Pascal'],
+    b: [[0.5, 0.08, 0.9, 0.06], [0.5, 0.58, 0.9, 0.06]],
+    c: [
+      ['Me laughing at the layoff memes on LinkedIn', 'Me getting a 15 minute "quick sync" invite from HR'],
+      ['Me joking that AI will take our jobs', 'Leadership announcing an "AI-first restructuring"'],
+      ['Me laughing at the RTO memo', 'Me reading that it applies to my team too'],
+      ['Me laughing at the Friday deploy', 'Me on call this weekend'],
+    ],
+  },
+  {
+    names: ['Leonardo DiCaprio Pointing', 'Leonardo Dicaprio Pointing', 'Leo Pointing'],
+    c: [
+      ['Me when someone in the meeting says', '"Let\'s take this offline"'],
+      ['Me when the job post says', '"Competitive salary" with no number'],
+      ['Me seeing my own idea', 'in the boss\'s LinkedIn post'],
+      ['When someone says', '"Sorry, you\'re on mute"'],
+    ],
+  },
+  {
+    names: ['Hello Fellow Kids', 'Steve Buscemi Fellow Kids'],
+    c: [
+      ['How do you do, fellow employees?', 'We\'re like a family here'],
+      ['Our company culture', 'is ping pong and a beer fridge'],
+      ['CEO on LinkedIn', 'Hello fellow Gen Z, slay the KPIs'],
+      ['HR announcing', 'mandatory fun Friday at 17:30'],
+    ],
+  },
+  {
+    names: ["It's Not Possible, No It's Necessary", 'Interstellar Its Not Possible', "No It's Necessary"],
+    b: [[0.5, 0.38, 0.92, 0.045], [0.5, 0.93, 0.92, 0.045]],
+    c: [
+      ['Delivering 3 months of work in 2 weeks? It\'s not possible.', 'No. It\'s in the roadmap.'],
+      ['Me: we can\'t ship this without testing', 'Sales: No. We already sold it.'],
+      ['Me: we can\'t add AI to a calculator', 'CEO: No. It\'s necessary.'],
+      ['Me: I can\'t join another meeting today', 'Calendar: No. It\'s necessary.'],
+    ],
+  },
+  {
+    names: ['Old Man Yells At Cloud', 'Old man yells at cloud'],
+    b: [[0.5, 0.1, 0.92, 0.08]],
+    c: [
+      ['CEO yells at remote work'],
+      ['Senior manager yells at Slack emojis'],
+      ['Boomer boss yells at "quiet quitting"'],
+      ['Legacy system yells at the cloud migration'],
+    ],
+  },
+  {
+    names: ['Elmo Fire', 'Elmo Rise', 'Elmo In Hell'],
+    c: [
+      ['Me after the 4th meeting', 'that could have been an email'],
+      ['Me during the "quick" production hotfix', 'on Friday at 17:00'],
+      ['Me after replying to all', 'on the company-wide email'],
+      ['The release', 'when nobody tested on Safari'],
+    ],
+  },
+  {
+    names: ['Ben Affleck Smoking'],
+    c: [
+      ['Me after the all-hands', 'where they said we\'re "doing great"'],
+      ['Me after my 5th interview round', 'for an "entry level" role'],
+      ['Me after the retro', 'that changed nothing again'],
+      ['When the "quick call"', 'took 90 minutes'],
+    ],
+  },
+  {
+    names: ['Bugs Bunny No', 'Bugs bunny no'],
+    b: [[0.5, 0.08, 0.92, 0.07]],
+    c: [
+      ['Me when they ask if I can "hop on a quick call"'],
+      ['Me when HR asks if I want to do the team-building escape room'],
+      ['Me when the recruiter asks if I\'m "open to a 3 month unpaid trial"'],
+      ['Me when they ask who wants to present at the all-hands'],
+    ],
+  },
+  {
+    names: ["Kevin's Chili", 'Kevins Chili', 'Kevin Chili'],
+    c: [
+      ['Me carrying the project for 6 months', 'The project on demo day'],
+      ['My carefully planned sprint', 'My sprint after one Slack message from the CEO'],
+      ['Our Q4 roadmap in January', 'Our Q4 roadmap in October'],
+      ['The release plan', 'The release'],
+    ],
+  },
+  {
+    names: ['The Office Congratulations', 'The Office Handshake', 'Office Congratulations'],
+    c: [
+      ['Congrats on the promotion!', 'Here\'s twice the work for the same salary'],
+      ['Congratulations on 5 years', 'with the company. Here\'s a pin.'],
+      ['Welcome to the team', 'Your laptop arrives in 3 weeks'],
+      ['Thrilled to announce my new role', 'Same desk, new title'],
+    ],
+  },
+  {
+    names: ['Michael Scott Facepalm', 'Michael Scott Annoyed'],
+    c: [
+      ['When someone replies all', 'to say "please remove me from this list"'],
+      ['When the CEO\'s LinkedIn post', 'mentions the layoffs and his kayak trip'],
+      ['When the client asks', 'for the logo to be bigger and smaller at the same time'],
+      ['When the "urgent" ticket', 'was a typo'],
+    ],
+  },
+  {
+    names: ['Absolute Cinema'],
+    c: [
+      ['The CEO saying "we\'re a family"', 'and announcing layoffs in the same email'],
+      ['A 3 hour all-hands', 'with no new information'],
+      ['A PowerPoint with 84 slides', 'and the conclusion on slide 84'],
+      ['When the demo works', 'on the first try'],
+    ],
+  },
+  {
+    names: ['Squidward window', 'Squidward Window'],
+    b: [[0.25, 0.9, 0.46, 0.06], [0.72, 0.12, 0.5, 0.06]],
+    c: [
+      ['Me in the office on RTO Monday', 'The colleagues who negotiated full remote'],
+      ['Me in the 9am standup', 'The team in another time zone still asleep'],
+      ['Me doing the release', 'Everyone else at the Christmas party'],
+      ['Me writing the documentation', 'Devs shipping without reading it'],
+    ],
+  },
+  {
+    names: ['Bell Curve', 'Midwit', 'IQ Bell Curve'],
+    b: [[0.15, 0.28, 0.28, 0.045], [0.5, 0.62, 0.32, 0.04], [0.85, 0.28, 0.28, 0.045]],
+    c: [
+      ['Just send an email', '15 slide deck, 3 alignment meetings and a working group', 'Just send an email'],
+      ['Ship it', 'Build an AI agent framework first', 'Ship it'],
+      ['Ask the customer', 'Run a 6 month market study', 'Ask the customer'],
+      ['Log off at 5', 'Show you\'re online until 9pm', 'Log off at 5'],
+    ],
+  },
+  {
+    names: ['Two Paths'],
+    b: [[0.25, 0.32, 0.44, 0.05], [0.75, 0.32, 0.44, 0.05], [0.5, 0.92, 0.6, 0.05]],
+    c: [
+      ['Say no to the scope change', 'Say yes and work weekends', 'Me in the stakeholder meeting'],
+      ['Write a normal LinkedIn post', 'Write a 30 line story about a B2B lesson from my toddler', 'Me with a laptop'],
+      ['Fix the root cause', 'Add another workaround', 'The team at 17:55'],
+      ['Read the documentation', 'Ask in Slack', 'Every new joiner'],
+    ],
+  },
+  {
+    names: ['Flex Tape'],
+    b: [[0.3, 0.06, 0.55, 0.05], [0.75, 0.42, 0.42, 0.045], [0.5, 0.82, 0.8, 0.055]],
+    c: [
+      ['Me', 'Critical bug in production', 'A banner saying "Known issue"'],
+      ['Project manager', 'The project 3 months late', 'A new timeline called "Phase 2"'],
+      ['Leadership', 'Low team morale', 'Pizza Friday'],
+      ['Product team', 'Missing feature', '"It\'s on the roadmap"'],
+    ],
+  },
+  {
+    names: ['Running Away Balloon'],
+    b: [[0.22, 0.08, 0.4, 0.045], [0.8, 0.12, 0.36, 0.045], [0.16, 0.6, 0.3, 0.04], [0.46, 0.55, 0.28, 0.04], [0.82, 0.68, 0.32, 0.04]],
+    c: [
+      ['Me', 'Deep focus work', 'A "quick" meeting', 'Me', 'Deep focus work'],
+      ['The team', 'Hitting the deadline', 'Scope creep', 'The team', 'Hitting the deadline'],
+      ['Me', 'Inbox zero', 'Reply-all thread', 'Me', 'Inbox zero'],
+      ['Me', 'Logging off at 5', 'Slack message at 16:58', 'Me', 'Logging off at 5'],
+    ],
+  },
+  {
+    names: ["They don't know", 'They Dont Know'],
+    c: [
+      ['They don\'t know I applied to 40 jobs', 'during this meeting'],
+      ['They don\'t know my camera is off', 'because I\'m still in bed'],
+      ['They don\'t know I wrote the whole report', 'with AI in 10 minutes'],
+      ['They don\'t know I\'ve been on mute', 'this whole time'],
+    ],
+  },
+  {
+    names: ['Grim Reaper Knocking Door'],
+    b: [[0.62, 0.62, 0.3, 0.05], [0.25, 0.2, 0.42, 0.045], [0.88, 0.2, 0.22, 0.045]],
+    c: [
+      ['AI', 'Copywriters, translators, illustrators', 'Me'],
+      ['Layoffs', 'Recruiting, marketing', 'My team'],
+      ['Budget cuts', 'Snacks, offsites, coffee', 'My training budget'],
+      ['The reorg', 'Two other departments', 'My manager'],
+    ],
+  },
+  {
+    names: ['You Guys are Getting Paid', 'You Guys Are Getting Paid?'],
+    c: [
+      ['Me, the unpaid intern', 'hearing about the bonus'],
+      ['When the freelancer finds out', 'the client actually pays invoices on time'],
+      ['Me hearing that other teams', 'get overtime pay'],
+      ['When you find out', 'other PMs have a budget'],
+    ],
+  },
+  {
+    names: ['Stonks'],
+    c: [
+      ['Cut the QA team', 'Profits'],
+      ['Rename the product "AI"', 'Valuation'],
+      ['Post the same idea 3 times', 'Engagement'],
+      ['Hire 1 person for 3 jobs', 'Efficiency'],
+    ],
+  },
+  {
+    names: ['Jim Halpert Pointing to Whiteboard', 'Jim Halpert Whiteboard'],
+    b: [[0.32, 0.2, 0.5, 0.05], [0.3, 0.73, 0.45, 0.05]],
+    c: [
+      ['Meetings should have an agenda', 'Meetings should have an agenda'],
+      ['Salary ranges in job posts', 'Salary ranges in job posts'],
+      ['Ship small, ship often', 'Ship small, ship often'],
+      ['Read the ticket before the standup', 'Read the ticket before the standup'],
+    ],
+  },
+  {
+    names: ['That Would Be Great', 'Office Space That Would Be Great'],
+    c: [
+      ['If you could come in on Saturday', 'that would be great'],
+      ['If you could just add AI to the roadmap', 'that would be great'],
+      ['If you could deliver it yesterday', 'that would be great'],
+      ['If you could join this 8am call from home', 'that would be great'],
+    ],
+  },
+  {
+    names: ['Guy Hammering Nails Into Sand', 'Hammering Nails Into Sand'],
+    b: [[0.35, 0.1, 0.62, 0.06], [0.68, 0.62, 0.42, 0.05], [0.5, 0.92, 0.85, 0.05]],
+    c: [
+      ['Me', 'Writing documentation', 'A team that never reads it'],
+      ['HR', 'Engagement surveys', 'Nothing changes'],
+      ['Project manager', 'Updating the plan', 'Scope changing every day'],
+      ['Me', 'Polite follow-up emails', 'A client who never replies'],
+    ],
+  },
+  {
+    names: ['Scooby doo mask reveal', 'Scooby Doo Reveal'],
+    b: [[0.22, 0.14, 0.42, 0.055], [0.22, 0.66, 0.42, 0.055]],
+    c: [
+      ['AI-powered startup', 'If statements'],
+      ['Unlimited holidays', 'Nobody takes any'],
+      ['Agile transformation', 'Waterfall with standups'],
+      ['Thought leader', 'Guy reposting other people\'s posts'],
     ],
   },
 ];

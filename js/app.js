@@ -55,6 +55,13 @@
     ideasStatus: $('#ideasStatus'),
     ideaList: $('#ideaList'),
     topicPicker: $('#topicPicker'),
+    liTools: $('#liTools'),
+    exportSize: $('#exportSize'),
+    exportBg: $('#exportBg'),
+    postText: $('#postText'),
+    newPostTextBtn: $('#newPostTextBtn'),
+    copyPostTextBtn: $('#copyPostTextBtn'),
+    linkedinBtn: $('#linkedinBtn'),
   };
 
   const ctx = els.canvas.getContext('2d');
@@ -95,6 +102,15 @@
 
   // Each loader resolves to [{ id, name, url, thumb, boxes, source, search }].
   const SOURCES = {
+    // Hand-picked LinkedIn and office templates (js/featured.js), always listed first.
+    featured: async () => (window.MEME_FEATURED || []).map((t, i) => ({
+      id: `featured-${i}`,
+      name: t.name,
+      url: t.url,
+      thumb: t.url,
+      boxes: t.boxes || 2,
+    })),
+
     imgflip: async () => {
       const json = await fetchJson(IMGFLIP_API);
       if (!json.success) throw new Error('Imgflip returned an error');
@@ -288,7 +304,9 @@
     return loadRemoteImage(t.url)
       .then(({ img, exportable }) => {
         const builtIn = findBuiltIn(t.name);
-        setImage(img, t.name, exportable, t.boxes, builtIn?.b);
+        // A template with built-in captions gets exactly as many boxes as its captions have lines.
+        const boxes = builtIn ? (builtIn.b?.length || builtIn.c[0].length) : t.boxes;
+        setImage(img, t.name, exportable, boxes, builtIn?.b);
         showIdeas(builtIn, t);
         showEditor();
         showToast(exportable ? '' : 'This image blocks downloads from other sites. Try another template.');
@@ -430,10 +448,11 @@
     }
     select(state.layers[0].id);
 
-    [els.addTextBtn, els.addTextBtn2, els.copyBtn, els.shareBtn, els.downloadBtn].forEach((b) => { b.disabled = false; });
+    [els.addTextBtn, els.addTextBtn2, els.copyBtn, els.shareBtn, els.downloadBtn, els.linkedinBtn].forEach((b) => { b.disabled = false; });
+    els.liTools.hidden = false;
     document.body.classList.add('has-image');
     els.changeTemplateBtn.hidden = false;
-    els.copyBtn.disabled = els.shareBtn.disabled = els.downloadBtn.disabled = !exportable;
+    els.copyBtn.disabled = els.shareBtn.disabled = els.downloadBtn.disabled = els.linkedinBtn.disabled = !exportable;
   }
 
   function addLayer({ text = 'YOUR TEXT', x = 0.5, y = 0.5, width = 0.92, size = 0.09, order } = {}, selectIt = true) {
@@ -448,6 +467,7 @@
       y: H * y,
       width: Math.round(W * width),
       fontSize,
+      baseSize: fontSize,   // the layout's size; long captions shrink from here to fit
       fontFamily: 'Impact, Anton, sans-serif',
       fill: '#ffffff',
       stroke: '#000000',
@@ -545,7 +565,7 @@
     l.fontFamily = els.propFont.value;
     ensureFont(l.fontFamily);
   });
-  bindProp(els.propSize, 'input', (l) => { l.fontSize = Number(els.propSize.value); });
+  bindProp(els.propSize, 'input', (l) => { l.fontSize = l.baseSize = Number(els.propSize.value); });
   bindProp(els.propRotate, 'input', (l) => { l.rotation = Number(els.propRotate.value); });
   bindProp(els.propFill, 'input', (l) => { l.fill = els.propFill.value; });
   bindProp(els.propStroke, 'input', (l) => { l.stroke = els.propStroke.value; });
@@ -856,7 +876,7 @@
       layer.y = clamp(p.y - drag.dy, 0, els.canvas.height);
     } else if (drag.mode === 'scale') {
       const ratio = Math.hypot(p.x - layer.x, p.y - layer.y) / drag.startDist;
-      layer.fontSize = clamp(Math.round(drag.startFont * ratio), 8, 1000);
+      layer.fontSize = layer.baseSize = clamp(Math.round(drag.startFont * ratio), 8, 1000);
       layer.width = Math.max(20, drag.startWidth * ratio);
       layer.strokeWidth = Math.round(drag.startStroke * ratio * 2) / 2;
     } else if (drag.mode === 'width') {
@@ -1030,11 +1050,72 @@
   /* Export                                                            */
   /* ---------------------------------------------------------------- */
 
-  function exportBlob() {
+  // LinkedIn feed sizes. The meme is fitted inside and the rest is filled with the background.
+  const EXPORT_SIZES = {
+    square: [1200, 1200],
+    portrait: [1080, 1350],
+    landscape: [1200, 627],
+  };
+
+  function exportCanvas() {
+    const meme = document.createElement('canvas');
+    meme.width = els.canvas.width;
+    meme.height = els.canvas.height;
+    drawScene(meme.getContext('2d'), false);
+    const size = EXPORT_SIZES[els.exportSize.value];
+    if (!size) return meme;
+
+    const [W, H] = size;
     const out = document.createElement('canvas');
-    out.width = els.canvas.width;
-    out.height = els.canvas.height;
-    drawScene(out.getContext('2d'), false);
+    out.width = W;
+    out.height = H;
+    const c = out.getContext('2d');
+    const bg = els.exportBg.value;
+    if (bg === 'blur') {
+      // Blur the plain picture (without the captions), scaled to cover the whole frame.
+      const pic = state.image;
+      const pw = pic.naturalWidth || pic.width;
+      const ph = pic.naturalHeight || pic.height;
+      const cover = Math.max(W / pw, H / ph) * 1.15;
+      const dw = pw * cover;
+      const dh = ph * cover;
+      if ('filter' in c) {
+        c.filter = `blur(${Math.round(W / 30)}px)`;
+        c.drawImage(pic, (W - dw) / 2, (H - dh) / 2, dw, dh);
+        c.filter = 'none';
+      }
+      if (!('filter' in c) || c.getImageData(0, 0, 1, 1).data[3] === 0) {
+        // No canvas filter (older Safari): shrink to a few pixels and scale back up in steps.
+        let src = pic;
+        let sw = pw;
+        let sh = ph;
+        for (const size of [96, 24]) {
+          const step = document.createElement('canvas');
+          step.width = size;
+          step.height = Math.max(1, Math.round(size * sh / sw));
+          step.getContext('2d').drawImage(src, 0, 0, step.width, step.height);
+          src = step; sw = step.width; sh = step.height;
+        }
+        c.imageSmoothingEnabled = true;
+        c.imageSmoothingQuality = 'high';
+        c.drawImage(src, (W - dw) / 2, (H - dh) / 2, dw, dh);
+      }
+      c.fillStyle = 'rgba(0, 0, 0, 0.3)';
+      c.fillRect(0, 0, W, H);
+    } else {
+      c.fillStyle = bg === 'black' ? '#000' : '#fff';
+      c.fillRect(0, 0, W, H);
+    }
+    const fit = Math.min(W / meme.width, H / meme.height);
+    const w = meme.width * fit;
+    const h = meme.height * fit;
+    c.imageSmoothingQuality = 'high';
+    c.drawImage(meme, (W - w) / 2, (H - h) / 2, w, h);
+    return out;
+  }
+
+  function exportBlob() {
+    const out = exportCanvas();
     return new Promise((resolve, reject) => {
       out.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('Export failed'))), 'image/png');
     });
@@ -1101,6 +1182,72 @@
   });
 
   /* ---------------------------------------------------------------- */
+  /* LinkedIn post text and sharing                                    */
+  /* ---------------------------------------------------------------- */
+
+  const POSTS = window.MEME_POSTS || {};
+  let postIndex = 0;
+  let postEdited = false;
+
+  function suggestPostText(next = false) {
+    if (next) postIndex++;
+    const set = POSTS[currentTopic] || POSTS.general;
+    if (!set) return;
+    const hooks = seededShuffle(set.hooks, `${state.imageName}:${currentTopic}`);
+    const hook = hooks[postIndex % hooks.length];
+    els.postText.value = `${hook}\n\n${set.tags.join(' ')}`;
+    postEdited = false;
+  }
+
+  els.postText.addEventListener('input', () => { postEdited = true; });
+  els.newPostTextBtn.addEventListener('click', () => suggestPostText(true));
+  els.copyPostTextBtn.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(els.postText.value);
+      showToast('Post text copied!');
+    } catch {
+      els.postText.select();
+      showToast('Select the text and copy it with Ctrl+C.');
+    }
+  });
+
+  els.linkedinBtn.addEventListener('click', async () => {
+    const text = els.postText.value.trim();
+    const touch = window.matchMedia?.('(pointer: coarse)').matches;
+    // Phones: the share sheet hands image and text to the LinkedIn app.
+    if (touch && canShareFiles) {
+      try {
+        const blob = await exportBlob();
+        await navigator.share({ files: [new File([blob], fileName(), { type: 'image/png' })], text });
+      } catch (err) {
+        if (err.name !== 'AbortError') showToast('Could not share. Use Download instead.');
+      }
+      return;
+    }
+    // Computers: copy the image, then open the LinkedIn post window with the text filled in.
+    let copied = false;
+    if (navigator.clipboard?.write && typeof ClipboardItem !== 'undefined') {
+      try {
+        // Start the copy before opening the tab, while the click still counts as a user gesture.
+        const copy = navigator.clipboard.write([new ClipboardItem({ 'image/png': exportBlob() })]);
+        window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(text)}`, '_blank', 'noopener');
+        await copy;
+        copied = true;
+      } catch (err) {
+        console.error(err);
+      }
+    } else {
+      window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(text)}`, '_blank', 'noopener');
+    }
+    if (copied) {
+      showToast('Meme copied! In LinkedIn, click into the post and press Ctrl+V (Cmd+V on Mac) to add it.');
+    } else {
+      els.downloadBtn.click();
+      setTimeout(() => showToast('Meme downloaded. In LinkedIn, add it with the image button.'), 50);
+    }
+  });
+
+  /* ---------------------------------------------------------------- */
   /* Applying captions                                                */
   /* ---------------------------------------------------------------- */
 
@@ -1108,6 +1255,23 @@
   function orderedLayers() {
     const key = (l) => (l.order ?? 1000) * 1e6 + l.y;
     return [...state.layers].sort((a, b) => key(a) - key(b));
+  }
+
+  // Shrink a caption until it stays inside the picture and wraps to at most 3 lines.
+  const MAX_FIT_LINES = 3;
+  const MIN_FIT_SCALE = 0.45;
+  function fitLayer(layer) {
+    const H = els.canvas.height;
+    const base = layer.baseSize || layer.fontSize;
+    layer.baseSize = base;
+    layer.fontSize = base;
+    const room = Math.max(2 * Math.min(layer.y, H - layer.y) - H * 0.02, H * 0.08);
+    for (let i = 0; i < 40 && layer.fontSize > base * MIN_FIT_SCALE; i++) {
+      const { lines, height } = layout(ctx, layer);
+      if (height <= room && lines.length <= MAX_FIT_LINES) break;
+      layer.fontSize = Math.max(Math.round(base * MIN_FIT_SCALE), Math.floor(layer.fontSize * 0.93));
+    }
+    layer.strokeWidth = Math.max(1, Math.round(layer.fontSize / 14 * 2) / 2);
   }
 
   function applyTexts(texts) {
@@ -1118,6 +1282,7 @@
       } else {
         ordered.push(addLayer({ text, y: Math.min(0.9, (i + 0.5) / texts.length) }, false));
       }
+      fitLayer(ordered[i]);
     });
     ordered.slice(texts.length).forEach((layer) => { layer.text = ''; });
     syncProps();
@@ -1176,6 +1341,27 @@
     return out;
   }
 
+  const POOL_NAMES = { 1: 'one', 2: 'two', 3: 'three', 4: 'four', 5: 'five' };
+
+  // Ideas written for exactly this many boxes. Only when a pack has none (6+ boxes) do we
+  // borrow the biggest smaller pool and stretch it with fitIdea.
+  function exactPool(pools, boxes) {
+    const exact = pools[POOL_NAMES[boxes]] || [];
+    if (exact.length) return exact;
+    for (let n = Math.min(boxes - 1, 5); n >= 1; n--) {
+      const list = pools[POOL_NAMES[n]] || [];
+      if (list.length) return list;
+    }
+    return [];
+  }
+
+  // Keep only ideas with one line per box. Stretching other ideas is a last resort for
+  // pictures where nothing was written for that many boxes (for example 6 boxes).
+  function fitAll(ideas, boxes) {
+    const exact = ideas.filter((idea) => idea.length === boxes);
+    return (exact.length ? exact : ideas).map((idea) => fitIdea(idea, boxes));
+  }
+
   // Fit an idea to the number of text boxes: first line on top, last line at the bottom.
   function fitIdea(texts, boxes) {
     const lines = texts.map((t) => String(t || '').trim());
@@ -1198,20 +1384,13 @@
   function ideasFor(template, boxes) {
     const pools = window.MEME_IDEAS || { two: [], one: [], three: [], four: [] };
     const seed = template?.name || 'meme';
-    const general = boxes === 1 ? [...pools.one, ...pools.two]
-      : boxes === 2 ? pools.two
-        : boxes === 3 ? [...pools.three, ...pools.two]
-          : [...pools.four, ...pools.three];
     const ideas = [];
-    if (template?.example?.some((t) => String(t).trim())) ideas.push(template.example);
-    // Templates with 3+ boxes lead with ideas written for that many boxes.
-    if (boxes >= 3) ideas.push(...seededShuffle(boxes === 3 ? pools.three : pools.four, seed).slice(0, 4));
+    if (template?.example?.length === boxes && template.example.some((t) => String(t).trim())) ideas.push(template.example);
     ideas.push(...seededShuffle(themeIdeas(`${template?.name || ''} ${template?.keywords || ''}`), seed).slice(0, 6));
-    ideas.push(...seededShuffle(general, seed));
+    ideas.push(...seededShuffle(exactPool(pools, boxes), seed));
 
     const seen = new Set();
-    return ideas
-      .map((idea) => fitIdea(idea, boxes))
+    return fitAll(ideas, boxes)
       .filter((idea) => {
         const key = idea.join('|').toLowerCase();
         if (!idea.some(Boolean) || seen.has(key)) return false;
@@ -1225,7 +1404,7 @@
 
   const TOPICS = window.MEME_TOPICS || {};
   const TOPIC_KEY = 'meme-maker-topic';
-  let currentTopic = 'general';
+  let currentTopic = TOPICS.linkedin ? 'linkedin' : 'general';
   try {
     const saved = localStorage.getItem(TOPIC_KEY);
     if (saved && TOPICS[saved]) currentTopic = saved;
@@ -1247,14 +1426,9 @@
 
   function topicIdeas(topic, builtIn, template, boxes) {
     const seed = `${template?.name || 'meme'}:${currentTopic}`;
-    const pool = boxes === 1 ? [...topic.one, ...topic.two]
-      : boxes === 2 ? topic.two
-        : boxes === 3 ? [...topic.three, ...topic.two]
-          : [...topic.four, ...topic.three];
     const specific = builtIn ? topic.templates[builtIn.names[0]] || [] : [];
     const seen = new Set();
-    return [...specific, ...seededShuffle(pool, seed)]
-      .map((idea) => fitIdea(idea, boxes))
+    return fitAll([...specific, ...seededShuffle(exactPool(topic, boxes), seed)], boxes)
       .filter((idea) => {
         const key = idea.join('|').toLowerCase();
         if (seen.has(key)) return false;
@@ -1265,7 +1439,10 @@
   }
 
   function renderTopicPicker() {
-    const options = [['general', 'General'], ...Object.entries(TOPICS).map(([key, t]) => [key, t.label])];
+    // Work topics first, then General, then the fun packs.
+    const options = Object.entries(TOPICS).map(([key, t]) => [key, t.label]);
+    const after = options.findIndex(([key]) => key === 'ai');
+    options.splice(after + 1, 0, ['general', 'General']);
     els.topicPicker.replaceChildren(...options.map(([key, label]) => {
       const btn = document.createElement('button');
       btn.type = 'button';
@@ -1298,6 +1475,7 @@
       useIdea(ideas[0]);
       els.ideaList.querySelector('.idea')?.classList.add('is-active');
     }
+    if (!postEdited || fill) { postIndex = 0; suggestPostText(); }
     els.ideasStatus.textContent = topic
       ? `${topic.label} ideas. Tap one to use it, or tap the text on the image to write your own.`
       : 'Tap an idea to use it, or tap the text on the image to write your own.';

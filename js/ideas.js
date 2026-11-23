@@ -217,4 +217,12 @@ window.MEME_IDEAS = {
     ['Payday', 'Shopping', 'Bills', 'Broke'],
     ['Alarm', 'Snooze', 'Snooze again', 'Late'],
   ],
+  five: [
+    ['Me', 'My goal', 'A distraction', 'Me', 'My goal'],
+    ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday, finally'],
+    ['Plan', 'Start', 'Problem', 'Bigger problem', 'Give up and order pizza'],
+    ['Wake up', 'Coffee', 'Emails', 'Meetings', 'Where did the day go?'],
+    ['Me', 'Going to bed early', 'One more episode', 'Me', 'Going to bed early'],
+    ['Idea', 'Excitement', 'Work', 'Doubt', 'Done anyway'],
+  ],
 };

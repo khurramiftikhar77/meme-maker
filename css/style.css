@@ -775,3 +775,49 @@ body {
   .template, .template img, .idea, .topic, .btn, .brand a { transition: none; }
   .template:hover, .template:hover img, .idea:hover, .topic:hover, .btn-primary:hover:not(:disabled), .brand a:hover { transform: none; }
 }
+
+/* LinkedIn panel under the meme */
+.li-tools {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(10, 102, 194, 0.45);
+  background: linear-gradient(160deg, rgba(10, 102, 194, 0.14), rgba(10, 102, 194, 0.03));
+  display: grid;
+  gap: 10px;
+}
+.li-tools[hidden] { display: none; }
+.li-title { margin: 0; font-size: 16px; display: flex; align-items: center; gap: 8px; }
+.li-badge {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  background: #0a66c2;
+  color: #fff;
+  font: 700 13px/1 system-ui, sans-serif;
+}
+.li-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
+.li-row > .field { flex: 1 1 180px; }
+.li-tools select, .li-tools textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+}
+.li-tools textarea { resize: vertical; min-height: 92px; }
+.li-tools p { margin: 0; }
+.btn-linkedin {
+  background: #0a66c2;
+  border-color: #0a66c2;
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 6px 18px rgba(10, 102, 194, 0.45);
+}
+.btn-linkedin:hover:not(:disabled) { background: #0b74dd; border-color: #0b74dd; transform: translateY(-2px); }
+@media (max-width: 560px) {
+  .li-actions .spacer { display: none; }
+  .li-actions .btn-linkedin { flex: 1 1 100%; }
+}

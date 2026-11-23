@@ -50,8 +50,8 @@
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({
           access_key: WEB3FORMS_KEY,
-          subject: `[Meme Maker: ${topic}] Message from ${data.name}`,
-          from_name: 'Meme Maker',
+          subject: `[MemeLink: ${topic}] Message from ${data.name}`,
+          from_name: 'MemeLink',
           replyto: data.email,
           name: data.name,
           email: data.email,

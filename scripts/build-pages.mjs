@@ -17,6 +17,10 @@ const AUTHOR_URL = 'https://khurramiftikhar.com';
 // js/captions.js is a browser script that sets window.MEME_CAPTIONS.
 const sandbox = { window: {} };
 vm.runInNewContext(fs.readFileSync(path.join(root, 'js/captions.js'), 'utf8'), sandbox);
+// Hand-picked templates (js/featured.js) carry their own image link, written straight into the page.
+vm.runInNewContext(fs.readFileSync(path.join(root, 'js/featured.js'), 'utf8'), sandbox);
+const featuredKey = (name) => String(name).toLowerCase().replace(/[^a-z0-9]/g, '');
+const featuredImages = new Map((sandbox.window.MEME_FEATURED || []).map((f) => [featuredKey(f.name), f.url]));
 const templates = sandbox.window.MEME_CAPTIONS.map((t) => {
   const name = t.names[0];
   const details = info[name];
@@ -43,6 +47,11 @@ function jsonLd(data) {
   return `<script type="application/ld+json">${JSON.stringify(data).replace(/</g, '\\u003c')}</script>`;
 }
 
+function heroSrc(t) {
+  const url = t.names.map((n) => featuredImages.get(featuredKey(n))).find(Boolean);
+  return url ? ` src="${esc(url)}"` : '';
+}
+
 function layout({ title, description, canonical, body, head = '', robots = '' }) {
   return `<!doctype html>
 <html lang="en">
@@ -60,7 +69,7 @@ ${robots ? `  <meta name="robots" content="${robots}">\n` : ''}${canonical ? `  
 ${head}</head>
 <body>
   <header class="topbar">
-    <p class="brand"><a href="/">Meme<span>Maker</span></a></p>
+    <p class="brand"><a href="/">Meme<span>Link</span></a></p>
     <nav class="top-links" aria-label="Main">
       <a href="/templates/">Meme templates</a>
       <a class="btn btn-primary" href="/">Make a meme</a>
@@ -73,7 +82,7 @@ ${body}
 
   <footer class="site-footer">
     <nav class="footer-links" aria-label="Site">
-      <a href="/">Meme Maker</a>
+      <a href="/">MemeLink</a>
       <a href="/templates/">Meme templates</a>
       <a href="/about">About</a>
       <a href="/privacy">Privacy Policy</a>
@@ -81,7 +90,7 @@ ${body}
       <a href="/contact">Contact</a>
       <a href="/impressum">Impressum</a>
     </nav>
-    <p class="muted small">&copy; <span id="year">2026</span> Meme Maker. Meme templates belong to their respective owners.</p>
+    <p class="muted small">&copy; <span id="year">2026</span> MemeLink. Meme templates belong to their respective owners.</p>
   </footer>
   <script src="/js/ads.js"></script>
   <script src="/js/template-page.js"></script>
@@ -121,9 +130,9 @@ function templatePage(t, i) {
   const boxes = `${t.boxes} text box${t.boxes === 1 ? '' : 'es'}`;
   const faq = [
     { q: `What is the ${t.name} meme?`, a: t.about },
-    { q: `How do I make a ${t.name} meme?`, a: `Click "Make this meme" to open the template in Meme Maker, then click any text on the image to type your own. ${t.use}` },
+    { q: `How do I make a ${t.name} meme?`, a: `Click "Make this meme" to open the template in MemeLink, then click any text on the image to type your own. ${t.use}` },
     { q: `How many text boxes does the ${t.name} template have?`, a: `It has ${boxes}. You can add more text, or move, resize and rotate any of it in the editor.` },
-    { q: 'Is Meme Maker free?', a: 'Yes. Meme Maker is free, needs no account, and your pictures never leave your device.' },
+    { q: 'Is MemeLink free?', a: 'Yes. MemeLink is free, needs no account, and your pictures never leave your device.' },
   ];
 
   const body = `${crumbs.html}
@@ -133,7 +142,7 @@ function templatePage(t, i) {
       <p class="byline">By <a href="/about#author">${AUTHOR}</a></p>
 
       <figure class="template-figure">
-        <img class="template-hero" data-template-names="${esc(t.names.join('|'))}" alt="${esc(`${t.name} meme template, blank, with ${boxes}`)}" decoding="async">
+        <img class="template-hero"${heroSrc(t)} data-template-names="${esc(t.names.join('|'))}" alt="${esc(`${t.name} meme template, blank, with ${boxes}`)}" decoding="async">
         <figcaption class="muted small">Blank ${esc(t.name)} template with ${boxes}.</figcaption>
       </figure>
       <p><a class="btn btn-primary make-btn" href="${editorUrl}">Make this meme</a></p>
@@ -179,7 +188,7 @@ ${related.map((r) => `        <li><a href="/templates/${r.slug}">${esc(r.name)}<
   ];
 
   return layout({
-    title: `${t.name} Meme Template and Generator | Meme Maker`,
+    title: `${t.name} Meme Template and Generator | MemeLink`,
     description: `Make a ${t.name} meme free online: blank template, ${t.c.length} caption ideas, what the meme means and how to use it.`,
     canonical: url,
     head: `${schemas.map((s) => `  ${jsonLd(s)}`).join('\n')}\n`,
@@ -200,7 +209,7 @@ function indexPage() {
 ${templates.map((t) => `      <li><a href="/templates/${t.slug}">${esc(t.name)}</a> <span class="muted small">${t.boxes} text box${t.boxes === 1 ? '' : 'es'}</span></li>`).join('\n')}
     </ul>`;
   return layout({
-    title: 'Popular Meme Templates | Meme Maker',
+    title: 'Popular Meme Templates | MemeLink',
     description: `Browse ${templates.length} popular meme templates with their meaning, caption ideas and a free meme generator.`,
     canonical: `${SITE}/templates/`,
     head: `  ${jsonLd(crumbs.schema)}\n`,
@@ -213,7 +222,7 @@ function notFoundPage() {
     <p>Sorry, that page does not exist. It may have moved, or the link may be wrong.</p>
     <p><a class="btn btn-primary" href="/">Make a meme</a></p>
     <p>Or browse the <a href="/templates/">popular meme templates</a>.</p>`;
-  return layout({ title: 'Page not found | Meme Maker', description: 'This page could not be found.', robots: 'noindex', body });
+  return layout({ title: 'Page not found | MemeLink', description: 'This page could not be found.', robots: 'noindex', body });
 }
 
 // The main page lists every template page so none of them are orphans.

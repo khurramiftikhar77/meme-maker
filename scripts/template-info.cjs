@@ -461,4 +461,121 @@ module.exports = {
     about: "A girl excitedly holding books, with captions written in a goofy accent (\"Oh my god\" becomes \"Ermahgerd\"). It shows over-the-top excitement.",
     use: "Write \"Ermahgerd\" on top and the exciting thing, misspelled the same way, at the bottom.",
   },
+  // Newer and work-friendly templates
+  'Chill Guy': {
+    about: 'A cartoon dog in a grey sweater and jeans, hands in pockets, smirking in a field. Drawn by artist Phillip Banks in 2023, it went viral in late 2024 as the face of staying calm while everything around you is chaos.',
+    use: 'Describe the stressful situation at the top and label Chill Guy at the bottom with whoever stays relaxed. It is perfect for LinkedIn posts about deadlines, reorgs and Monday mornings.',
+  },
+  'Two Soyjaks Pointing': {
+    about: 'Two bearded "soyjak" drawings with open mouths pointing excitedly at something. It mocks people who get overly excited about anything new, shiny or on-trend.',
+    use: 'Write who is excited at the top and what they are pointing at below. In work memes it fits investors seeing "AI" or managers seeing a dashboard.',
+  },
+  'Confused Math Lady': {
+    about: 'Brazilian actress Renata Sorrah in a scene from the 2004 soap opera "Senhora do Destino", with geometry and equations floating around her. It stands for trying to work out something that makes no sense.',
+    use: 'Put the confusing thing in the caption: a job post, a salary range, an org chart or a project plan. Top and bottom text both work.',
+  },
+  'Gigachad': {
+    about: 'A stylised black-and-white photo of a muscular, square-jawed model, known online as Gigachad. It shows someone confidently doing the sensible thing others are afraid to do.',
+    use: 'Write the bold action at the top and the calm, confident detail at the bottom, for example "Declines the meeting" and "Without giving a reason".',
+  },
+  'Pedro Pascal Laughing Then Crying': {
+    about: 'Two stills of actor Pedro Pascal: laughing hard in the top frame and looking like he is crying in the bottom one. It shows the moment a joke stops being funny because it is about you.',
+    use: 'Write what you laughed at in the top panel and the moment it hits you in the bottom panel, like laughing at layoff memes and then getting the HR invite.',
+  },
+  'Leonardo DiCaprio Pointing': {
+    about: 'Leonardo DiCaprio as Rick Dalton in "Once Upon a Time in Hollywood" (2019), pointing at the TV with a beer and a cigarette. It is used to call out something you instantly recognise.',
+    use: 'Write the situation at the top and the thing you recognise at the bottom. It works well for spotting clichés: AI-written posts, "quick syncs" and buzzwords.',
+  },
+  'Hello Fellow Kids': {
+    about: 'Steve Buscemi in a 2012 episode of "30 Rock", dressed as a teenager with a skateboard and a backwards cap, asking "How do you do, fellow kids?". It mocks brands and bosses trying too hard to seem young and cool.',
+    use: 'Write the out-of-touch line at the top and the cringe detail at the bottom. Corporate culture posts and CEO TikTok attempts are perfect targets.',
+  },
+  "It's Not Possible, No It's Necessary": {
+    about: 'A scene from the film "Interstellar" (2014): one panel says "It\'s not possible", and Matthew McConaughey answers "No. It\'s necessary." It shows someone doing the impossible because they have no choice.',
+    use: 'Write the impossible demand in the top panel and the reply in the bottom panel, like a 3-month project due in 2 weeks: "No. It\'s in the roadmap."',
+  },
+  'Old Man Yells At Cloud': {
+    about: 'A newspaper clipping from "The Simpsons" showing Grampa Simpson shaking his fist at the sky under the headline "Old man yells at cloud". It mocks someone angrily resisting something they cannot change.',
+    use: 'Rewrite the headline: who is yelling and at what, for example "CEO yells at remote work" or "Old engineer yells at vibe coding".',
+  },
+  'Elmo Fire': {
+    about: 'Elmo with his arms raised in front of a wall of flames, also called "Elmo Rise". It stands for pure chaos, rage or the moment you lose it completely.',
+    use: 'Write who is losing it at the top and what pushed them over the edge at the bottom, like the 4th meeting that could have been an email.',
+  },
+  'Ben Affleck Smoking': {
+    about: 'A paparazzi photo of Ben Affleck looking exhausted and standing alone outside with a cigarette. It shows someone completely drained by a situation.',
+    use: 'Write "Me after" at the top and the draining thing at the bottom: the 7th interview round, the all-hands or the retro that changed nothing.',
+  },
+  'Bugs Bunny No': {
+    about: 'Bugs Bunny with puffed-out cheeks and a smug face, with the word "no" written below him. It is the simplest, most stubborn refusal on the internet.',
+    use: 'Write the request at the top. The picture already says no. Great for "Can you hop on a quick call?" and other things nobody wants to do.',
+  },
+  "Kevin's Chili": {
+    about: 'Kevin Malone in "The Office" carrying his famous pot of chili, then spilling all of it on the office floor. It shows something you worked hard on falling apart at the last moment.',
+    use: 'Write the thing you carefully prepared in the top panel and what happened to it in the bottom panel, like a project plan before and after the client feedback.',
+  },
+  'The Office Congratulations': {
+    about: 'A scene from "The Office" where a younger Michael Scott shakes hands with his boss in a formal congratulations moment. It is used for awkward or underwhelming rewards.',
+    use: 'Write the congratulations at the top and the disappointing twist at the bottom, for example a promotion with twice the work and the same salary.',
+  },
+  'Michael Scott Facepalm': {
+    about: 'Michael Scott from "The Office" covering his face in frustration. It shows second-hand embarrassment or exasperation at something painfully dumb.',
+    use: 'Write the setup at the top and the facepalm moment at the bottom: reply-all emails, cringe LinkedIn posts or the urgent ticket that was a typo.',
+  },
+  'Absolute Cinema': {
+    about: 'Director Martin Scorsese raising both hands as if presenting a masterpiece, a meme that took off in 2024. It is used to praise something as perfect, often ironically.',
+    use: 'Write the "masterpiece" in the caption. It works ironically (a 3-hour all-hands) and sincerely (a job post that includes the salary).',
+  },
+  'Squidward window': {
+    about: 'Squidward from "SpongeBob SquarePants" watching through his window as SpongeBob and Patrick have fun outside. It shows being stuck doing something dull while others enjoy themselves.',
+    use: 'Label Squidward with yourself and what you are stuck doing, and the window with everyone else having fun.',
+  },
+  'Bell Curve': {
+    about: 'An IQ bell curve with a simple character on the left, an anxious overthinker in the middle and a hooded wise figure on the right. Both ends agree on the simple answer while the middle overcomplicates it. Also called the midwit meme.',
+    use: 'Put the same simple answer on both ends and the overcomplicated version in the middle, for example "Just send an email" vs. "3 alignment meetings and a working group".',
+  },
+  'Two Paths': {
+    about: 'A cartoon of a boy standing where a path splits into a sunny road to a castle and a dark, stormy road. It shows choosing between the good option and the tempting bad one.',
+    use: 'Label the bright path, the dark path and the boy at the bottom with who has to choose.',
+  },
+  'Flex Tape': {
+    about: 'Phil Swift from the 2017 Flex Tape infomercial slapping tape over a leaking tank. It mocks covering a big problem with a quick fix.',
+    use: 'Label Phil with who is fixing it, the leak with the real problem and the tape with the quick fix, like "Project 3 months late" fixed with "Phase 2".',
+  },
+  'Running Away Balloon': {
+    about: 'A two-panel comic: a man reaches for a yellow balloon, then a pink creature grabs him and the balloon floats away. It shows a distraction stopping you from reaching your goal.',
+    use: 'Label the man and the balloon in the top panel, then the pink creature (the distraction), the man and the balloon again in the bottom panel.',
+  },
+  "They don't know": {
+    about: 'A Wojak drawing of a guy in a party hat standing alone in the corner at a party, thinking "They don\'t know..." about a secret only he knows.',
+    use: 'Write "They don\'t know..." and the secret at the top, and the detail at the bottom, like "They don\'t know I wrote the report with AI in 10 minutes".',
+  },
+  'Grim Reaper Knocking Door': {
+    about: 'The Grim Reaper knocking on a door, with a trail of blood from the doors he has already visited. It shows a threat that has already hit others and is now coming for you.',
+    use: 'Label the reaper with the threat, the first doors with who it already got, and the last door with who is next.',
+  },
+  'You Guys are Getting Paid': {
+    about: 'Will Poulter in "We\'re the Millers" (2013), shocked to learn the others are being paid. It shows finding out you are the only one doing it for free.',
+    use: 'Write who is shocked at the top and what they just found out at the bottom, like an intern hearing about the bonus.',
+  },
+  'Stonks': {
+    about: 'A 3D "Meme Man" in a suit standing in front of a rising stock chart, with "stonks" deliberately misspelled. It mocks a dumb decision that someone thinks is genius.',
+    use: 'Write the questionable move at the top and the "win" at the bottom, for example "Rename the product AI" and "Valuation".',
+  },
+  'Jim Halpert Pointing to Whiteboard': {
+    about: 'Jim Halpert from "The Office" pointing at a whiteboard in two panels, smiling in the first and serious in the second. It is used to state a simple truth people keep ignoring.',
+    use: 'Write the same simple rule on both whiteboards, like "Meetings need an agenda". The repetition is the joke.',
+  },
+  'That Would Be Great': {
+    about: 'Bill Lumbergh from the film "Office Space" (1999) holding a coffee mug and making a passive-aggressive request. He is the ultimate symbol of the annoying boss.',
+    use: 'Write the unreasonable request at the top, starting with "If you could...", and finish with "that would be great" at the bottom.',
+  },
+  'Guy Hammering Nails Into Sand': {
+    about: 'A man crouching on a beach, hammering nails into wet sand. It shows effort that cannot possibly achieve anything.',
+    use: 'Label the man, the nails (the effort) and the sand (what makes it pointless), like "Writing documentation" for "A team that never reads it".',
+  },
+  'Scooby doo mask reveal': {
+    about: 'Fred from "Scooby-Doo" pulling the mask off a villain to reveal who it really is. It exposes what something really is behind its fancy label.',
+    use: 'Write the fancy label on the masked villain and the reality on the unmasked one, like "AI-powered platform" and "If statements".',
+  },
 };
