@@ -122,6 +122,57 @@ window.MEME_IDEAS = {
     },
   },
 
+  // Work and family ideas for the editor's audience filters (keys match MEME_AUDIENCES),
+  // used for templates that have no `a` captions of their own in js/captions.js.
+  audiences: {
+    dev: [
+      ['When the code works on the first try', 'and now I do not trust it'],
+      ['Me explaining to my family', 'what I do all day at work'],
+      ['When the bug only happens', 'during the demo'],
+      ['Me after fixing one bug', 'looking at the 3 new ones'],
+      ['When someone asks for a quick estimate', 'and writes it in stone'],
+      ['When you find the fix', 'in your own answer from 2 years ago'],
+      ['Me pushing to production', 'on a Friday afternoon'],
+      ['When the code review says "LGTM"', 'after 4 seconds'],
+    ],
+    product: [
+      ['When the feature you fought for', 'gets used by 3 people'],
+      ['Me in the roadmap meeting', 'saying "it depends" for the 9th time'],
+      ['When a stakeholder says', '"it should be easy"'],
+      ['Me reading user feedback', 'that asks for the feature we removed'],
+      ['When the launch goes well', 'and nobody knows why'],
+      ['When the sales team promises', 'a feature that does not exist yet'],
+    ],
+    project: [
+      ['When the status is green', 'but the project is on fire'],
+      ['Me asking for an update', 'for the 4th time this week'],
+      ['When the deadline moves', 'but the scope does not'],
+      ['When someone says', '"we can do it in parallel"'],
+      ['Me updating the timeline', 'after one "tiny" change'],
+      ['When the whole team', 'is out on the launch day'],
+    ],
+    office: [
+      ['When the meeting', 'could have been an email'],
+      ['Me unmuting to speak', 'and the meeting ends'],
+      ['When someone says "quick sync"', 'and books an hour'],
+      ['Me pretending to take notes', 'while making a grocery list'],
+      ['When you reply all', 'by accident'],
+      ['When it is 4:59pm', 'and someone asks "got a minute?"'],
+      ['Me after lunch', 'in the 2pm meeting'],
+      ['When your out of office reply', 'is the best thing you wrote all year'],
+    ],
+    parents: [
+      ['Me finishing my coffee', 'while it is still hot'],
+      ['When the kids are quiet', 'for more than 2 minutes'],
+      ['Me on a work call', 'while my kid shows everyone their snack'],
+      ['When daycare calls', 'in the middle of the workday'],
+      ['When bedtime takes', 'longer than my workday'],
+      ['Me telling my kid to share', 'while hiding the chocolate'],
+      ['Working parents at 9pm', 'finally starting their to-do list'],
+      ['When the kid wakes up at 5am', 'on the one day you can sleep in'],
+    ],
+  },
+
   // Two text boxes, usually top and bottom.
   two: [
     ['Me: I will sleep early tonight', 'Also me at 3am:'],

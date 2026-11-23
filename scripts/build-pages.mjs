@@ -1,5 +1,6 @@
-// Generates the crawlable template pages, the templates index, the 404 page and sitemap.xml
-// from js/captions.js and scripts/template-info.cjs. Run with: npm run build:pages
+// Generates the crawlable template pages, the templates index, the /work-memes/ pages, the 404
+// page and sitemap.xml from js/captions.js, scripts/template-info.cjs and scripts/audience-info.cjs.
+// Run with: npm run build:pages
 import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
@@ -9,6 +10,7 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const require = createRequire(import.meta.url);
 const info = require('./template-info.cjs');
+const audienceInfo = require('./audience-info.cjs');
 
 const SITE = 'https://mememaker.khurramiftikhar.com';
 const AUTHOR = 'Khurram Iftikhar';
@@ -25,8 +27,23 @@ const templates = sandbox.window.MEME_CAPTIONS.map((t) => {
   const name = t.names[0];
   const details = info[name];
   if (!details) throw new Error(`Missing description for "${name}" in scripts/template-info.cjs`);
-  return { ...t, name, slug: slugify(name), boxes: t.c[0].length, ...details };
+  const boxes = t.c[0].length;
+  Object.entries(t.a || {}).forEach(([key, list]) => {
+    if (!audienceInfo[key]) throw new Error(`Unknown audience "${key}" for "${name}"`);
+    list.forEach((c) => {
+      if (c.length !== boxes) throw new Error(`"${name}" ${key} caption needs ${boxes} texts: ${JSON.stringify(c)}`);
+    });
+  });
+  return { ...t, name, slug: slugify(name), boxes, ...details };
 });
+
+// One /work-memes/ page per audience, listing the templates that have captions for it.
+const audiences = Object.entries(audienceInfo).map(([key, details]) => ({
+  key,
+  ...details,
+  path: `/work-memes/${details.slug}`,
+  templates: templates.filter((t) => t.a?.[key]?.length),
+}));
 
 const slugs = new Set();
 templates.forEach((t) => {
@@ -72,6 +89,7 @@ ${head}</head>
     <p class="brand"><a href="/">Meme<span>Link</span></a></p>
     <nav class="top-links" aria-label="Main">
       <a href="/templates/">Meme templates</a>
+      <a href="/work-memes/">Work memes</a>
       <a class="btn btn-primary" href="/">Make a meme</a>
     </nav>
   </header>
@@ -84,11 +102,17 @@ ${body}
     <nav class="footer-links" aria-label="Site">
       <a href="/">MemeLink</a>
       <a href="/templates/">Meme templates</a>
+      <a href="/work-memes/">Work memes</a>
       <a href="/about">About</a>
       <a href="/privacy">Privacy Policy</a>
       <a href="/terms">Terms of Use</a>
       <a href="/contact">Contact</a>
       <a href="/impressum">Impressum</a>
+    </nav>
+    <nav class="footer-links footer-tools" aria-label="More free tools">
+      <span>More free tools:</span>
+      <a href="https://shipkit.khurramiftikhar.com">ShipKit</a>
+      <a href="https://dadops.khurramiftikhar.com">DadOps</a>
     </nav>
     <p class="muted small">&copy; <span id="year">2026</span> MemeLink. Meme templates belong to their respective owners.</p>
   </footer>
@@ -158,7 +182,13 @@ function templatePage(t, i) {
 ${t.c.map((caption) => `        <li>${caption.filter(Boolean).map(esc).join(' <span class="muted">/</span> ')}</li>`).join('\n')}
       </ul>
       <p><a href="${editorUrl}">Open the ${esc(t.name)} template in the editor</a> to use one of these or write your own.</p>
-
+${t.a ? `
+      <h2>${esc(t.name)} work meme captions</h2>
+${audiences.filter((a) => t.a[a.key]?.length).map((a) => `      <h3><a href="${a.path}">${esc(a.name)}</a></h3>
+      <ul class="caption-ideas">
+${t.a[a.key].map((caption) => `        <li>${caption.filter(Boolean).map(esc).join(' <span class="muted">/</span> ')}</li>`).join('\n')}
+      </ul>`).join('\n')}
+` : ''}
       <h2>Frequently asked questions</h2>
       <dl class="faq">
 ${faq.map(({ q, a }) => `        <dt>${esc(q)}</dt>\n        <dd>${esc(a)}</dd>`).join('\n')}
@@ -205,6 +235,7 @@ function indexPage() {
 
     <h1>Popular meme templates</h1>
     <p>Pick a template to learn what it means, see caption ideas, and make your own version for free. The <a href="/">meme generator</a> also lets you search more than 500 templates or upload your own picture.</p>
+    <p>Making a meme for work? See the <a href="/work-memes/">work memes</a> for ${audiences.map((a) => `<a href="${a.path}">${esc(a.name.toLowerCase())}</a>`).join(', ').replace(/, ([^,]*)$/, ' and $1')}.</p>
     <ul class="template-index">
 ${templates.map((t) => `      <li><a href="/templates/${t.slug}">${esc(t.name)}</a> <span class="muted small">${t.boxes} text box${t.boxes === 1 ? '' : 'es'}</span></li>`).join('\n')}
     </ul>`;
@@ -212,6 +243,108 @@ ${templates.map((t) => `      <li><a href="/templates/${t.slug}">${esc(t.name)}<
     title: 'Popular Meme Templates | MemeLink',
     description: `Browse ${templates.length} popular meme templates with their meaning, caption ideas and a free meme generator.`,
     canonical: `${SITE}/templates/`,
+    head: `  ${jsonLd(crumbs.schema)}\n`,
+    body,
+  });
+}
+
+function audiencePage(a) {
+  const url = `${SITE}${a.path}`;
+  const crumbs = breadcrumbs([
+    { name: 'Home', path: '/' },
+    { name: 'Work memes', path: '/work-memes/' },
+    { name: a.name, path: a.path },
+  ]);
+  const count = a.templates.reduce((n, t) => n + t.a[a.key].length, 0);
+  const faq = [
+    ...a.faq,
+    { q: 'Is MemeLink free?', a: 'Yes. MemeLink is free, has no watermark, needs no account, and your pictures never leave your device.' },
+  ];
+  const others = audiences.filter((o) => o.key !== a.key);
+
+  const body = `${crumbs.html}
+
+    <article class="work-article">
+      <h1>${esc(a.name)}</h1>
+      <p class="byline">By <a href="/about#author">${AUTHOR}</a></p>
+${a.intro.map((p) => `      <p>${esc(p)}</p>`).join('\n')}
+      <p><a class="btn btn-primary make-btn" href="${esc(`/?ideas=${a.filter}`)}">Open the meme maker</a></p>
+
+      <h2>${a.templates.length} templates with ${count} ${esc(a.name.toLowerCase().replace(/ memes$/, ''))} captions</h2>
+      <ul class="work-meme-list">
+${a.templates.map((t) => `        <li class="work-meme">
+          <img class="template-thumb" data-template-names="${esc(t.names.join('|'))}" alt="${esc(`${t.name} meme template`)}" loading="lazy" decoding="async">
+          <h3><a href="/templates/${t.slug}">${esc(t.name)}</a></h3>
+          <ul class="caption-ideas">
+${t.a[a.key].map((caption) => `            <li>${caption.filter(Boolean).map(esc).join(' <span class="muted">/</span> ')}</li>`).join('\n')}
+          </ul>
+          <a class="btn btn-primary make-btn" href="${esc(`/?template=${encodeURIComponent(t.name)}&ideas=${a.filter}`)}">Make this meme</a>
+        </li>`).join('\n')}
+      </ul>
+
+      <h2>Tips for sharing ${esc(a.name.toLowerCase())}</h2>
+      <p>${esc(a.tips)}</p>
+
+      <h2>Frequently asked questions</h2>
+      <dl class="faq">
+${faq.map(({ q, a: answer }) => `        <dt>${esc(q)}</dt>\n        <dd>${esc(answer)}</dd>`).join('\n')}
+      </dl>
+
+      <h2>More work memes</h2>
+      <ul class="related-links">
+${others.map((o) => `        <li><a href="${o.path}">${esc(o.name)}</a></li>`).join('\n')}
+      </ul>
+      <p><a href="/templates/">See all meme templates</a></p>
+    </article>`;
+
+  const schemas = [
+    crumbs.schema,
+    {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: faq.map(({ q, a: answer }) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: answer } })),
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      name: a.name,
+      url,
+      author: { '@type': 'Person', name: AUTHOR, url: AUTHOR_URL },
+    },
+  ];
+
+  return layout({
+    title: `${a.title} | MemeLink`,
+    description: a.description,
+    canonical: url,
+    head: `${schemas.map((sc) => `  ${jsonLd(sc)}`).join('\n')}\n`,
+    body,
+  });
+}
+
+function audienceIndexPage() {
+  const crumbs = breadcrumbs([
+    { name: 'Home', path: '/' },
+    { name: 'Work memes', path: '/work-memes/' },
+  ]);
+  const body = `${crumbs.html}
+
+    <h1>Work memes</h1>
+    <p>Memes are how teams say "same" without another meeting. These pages collect meme templates with ready-made, work-safe captions for developers, product and project managers, office life and working parents. Pick one, edit the text, and share it on Slack, Teams or LinkedIn. It is free, with no watermark and no account.</p>
+    <ul class="work-index">
+${audiences.map((a) => `      <li>
+        <h2><a href="${a.path}">${esc(a.name)}</a></h2>
+        <p>${esc(a.description)}</p>
+        <ul class="caption-ideas">
+${a.templates.slice(0, 3).map((t) => `          <li>${t.a[a.key][0].filter(Boolean).map(esc).join(' <span class="muted">/</span> ')} <span class="muted small">(${esc(t.name)})</span></li>`).join('\n')}
+        </ul>
+      </li>`).join('\n')}
+    </ul>
+    <p>In the <a href="/">meme maker</a>, the buttons above the caption ideas show the same captions for whichever template you open.</p>`;
+  return layout({
+    title: 'Work Memes for LinkedIn, Developers, Managers and Parents | MemeLink',
+    description: 'Free work meme generator with work-safe captions for developers, product managers, project managers, office life and working parents. Share on Slack or LinkedIn.',
+    canonical: `${SITE}/work-memes/`,
     head: `  ${jsonLd(crumbs.schema)}\n`,
     body,
   });
@@ -239,11 +372,25 @@ function updateHomeLinks() {
 ${templates.map((t) => `        <li><a href="/templates/${t.slug}">${esc(t.name)}</a></li>`).join('\n')}
       </ul>
       ${end}`;
-  fs.writeFileSync(file, html.slice(0, i) + links + html.slice(j + end.length));
+  let out = html.slice(0, i) + links + html.slice(j + end.length);
+
+  const workStart = '<!-- WORK-MEMES-LINKS:START -->';
+  const workEnd = '<!-- WORK-MEMES-LINKS:END -->';
+  const k = out.indexOf(workStart);
+  const l = out.indexOf(workEnd);
+  if (k < 0 || l < k) throw new Error('index.html is missing the WORK-MEMES-LINKS markers');
+  const workLinks = `${workStart}
+      <ul class="home-template-links">
+${audiences.map((a) => `        <li><a href="${a.path}">${esc(a.name)}</a></li>`).join('\n')}
+      </ul>
+      ${workEnd}`;
+  out = out.slice(0, k) + workLinks + out.slice(l + workEnd.length);
+  fs.writeFileSync(file, out);
 }
 
 function sitemap() {
-  const paths = ['/', '/templates/', ...templates.map((t) => `/templates/${t.slug}`), '/about', '/privacy', '/terms', '/contact', '/impressum'];
+  const paths = ['/', '/templates/', ...templates.map((t) => `/templates/${t.slug}`),
+    '/work-memes/', ...audiences.map((a) => a.path), '/about', '/privacy', '/terms', '/contact', '/impressum'];
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${paths.map((p) => `  <url><loc>${SITE}${p}</loc></url>`).join('\n')}
@@ -256,7 +403,12 @@ fs.rmSync(outDir, { recursive: true, force: true });
 fs.mkdirSync(outDir);
 templates.forEach((t, i) => fs.writeFileSync(path.join(outDir, `${t.slug}.html`), templatePage(t, i)));
 fs.writeFileSync(path.join(outDir, 'index.html'), indexPage());
+const workDir = path.join(root, 'work-memes');
+fs.rmSync(workDir, { recursive: true, force: true });
+fs.mkdirSync(workDir);
+audiences.forEach((a) => fs.writeFileSync(path.join(workDir, `${a.slug}.html`), audiencePage(a)));
+fs.writeFileSync(path.join(workDir, 'index.html'), audienceIndexPage());
 fs.writeFileSync(path.join(root, '404.html'), notFoundPage());
 fs.writeFileSync(path.join(root, 'sitemap.xml'), sitemap());
 updateHomeLinks();
-console.log(`Built ${templates.length} template pages, the templates index, 404.html and sitemap.xml.`);
+console.log(`Built ${templates.length} template pages, the templates index, ${audiences.length} work meme pages and their index, 404.html and sitemap.xml.`);

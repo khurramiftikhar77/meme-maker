@@ -1,7 +1,7 @@
 // Ready-to-paste LinkedIn post text for each caption topic: a short hook plus hashtags.
-// Keys match js/topics.js; "general" is used when no topic pack is selected.
+// Keys match the caption filter ids (MEME_AUDIENCES in js/captions.js); "all" is for All ideas.
 window.MEME_POSTS = {
-  general: {
+  all: {
     hooks: [
       'Monday mood, explained in one picture. 😅',
       'Tell me you work in an office without telling me you work in an office.',
@@ -101,7 +101,7 @@ window.MEME_POSTS = {
     ],
     tags: ['#AI', '#GenAI', '#FutureOfWork', '#TechHumor'],
   },
-  parenthood: {
+  parents: {
     hooks: [
       'Working parents, this one is for you. ☕',
       'Parenting and a full-time job: a love story. 😅',
@@ -111,6 +111,17 @@ window.MEME_POSTS = {
       'If you\'ve ever joined a call with a toddler on your lap, you know.',
     ],
     tags: ['#WorkingParents', '#Parenting', '#WorkLifeBalance'],
+  },
+  dev: {
+    hooks: [
+      'It works on my machine. Ship it? 😅',
+      'Every developer has lived this at least once. Usually on a Friday.',
+      'Tag the dev who deployed on Friday afternoon. 👀',
+      'Code review comment of the day, in meme form.',
+      'This is what "just a quick fix" looks like in production.',
+      'Legacy code: written by someone smarter, or by me 6 months ago.',
+    ],
+    tags: ['#SoftwareEngineering', '#DeveloperLife', '#ProgrammerHumor'],
   },
   desi: {
     hooks: [

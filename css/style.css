@@ -223,6 +223,20 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .ideas-head .btn { padding: 6px 12px; font-size: 13px; }
 #ideasStatus { margin: 6px 0 10px; }
 
+.idea-filters { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.idea-filter {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.idea-filter:hover, .idea-filter:focus-visible { border-color: var(--muted); outline: none; }
+.idea-filter[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-text); font-weight: 600; }
+
 .idea-list {
   list-style: none;
   margin: 0;
@@ -465,6 +479,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .top-links { display: flex; align-items: center; gap: 14px; margin-left: auto; }
 .top-links a:not(.btn) { color: var(--text); }
 .top-links .btn { text-decoration: none; }
+.top-links a { white-space: nowrap; }
+@media (max-width: 560px) {
+  .top-links { gap: 12px; font-size: 14px; }
+  .top-links .btn { padding: 6px 10px; }
+}
 .top-template-link { margin-left: auto; color: var(--muted); }
 .top-template-link:hover { color: var(--text); }
 
@@ -498,6 +517,36 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .make-btn { display: inline-block; text-decoration: none; }
 
 .caption-ideas li { margin-bottom: 6px; }
+
+/* Work meme pages */
+.work-meme-list, .work-index { list-style: none; padding: 0; margin: 0; }
+.page ul.work-meme-list, .page ul.work-index { padding-left: 0; }
+.work-meme-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+.work-meme {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.work-meme h3 { margin: 0; font-size: 17px; }
+.work-meme .caption-ideas { margin: 0; padding-left: 18px; font-size: 14px; flex: 1; }
+.work-meme .make-btn { align-self: flex-start; }
+.template-thumb {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: contain;
+  background: var(--panel-2);
+  border-radius: 8px;
+}
+.template-thumb.is-missing { display: none; }
+.work-index > li { margin-bottom: 8px; }
+.work-index h2 { margin-bottom: 4px; }
+.footer-tools span { color: var(--muted); }
 .faq dt { font-weight: 700; margin-top: 14px; }
 .faq dd { margin: 4px 0 0; color: var(--text); }
 .site-footer .faq dd { color: var(--muted); }
@@ -562,26 +611,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   .stage-actions .change-template { flex-basis: 100%; }
 }
 
-/* Caption topic buttons */
-.topic-picker {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding: 2px 0 8px;
-  margin-top: 8px;
-}
-.topic {
-  flex: 0 0 auto;
-  background: var(--panel-2);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 6px 12px;
-  font-size: 13px;
-  cursor: pointer;
-  white-space: nowrap;
-}
-.topic:hover { border-color: var(--muted); }
-.topic[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-text); font-weight: 600; }
+/* Caption filter buttons */
 
 /* ============ Fancy layer: glow, depth and motion on top of the base styles ============ */
 :root {
@@ -624,7 +654,7 @@ body {
 .brand a:hover { transform: rotate(-2deg) scale(1.04); }
 
 .tab { transition: color 0.2s, background 0.2s, box-shadow 0.2s; }
-.tab.is-active, .topic[aria-pressed="true"], .segmented button.is-active {
+.tab.is-active, .idea-filter[aria-pressed="true"], .segmented button.is-active {
   background: var(--grad);
   box-shadow: 0 4px 16px var(--glow);
 }
@@ -677,8 +707,8 @@ body {
 /* Caption ideas */
 .ideas-head h2, .panel h2, .props-head h2 { letter-spacing: 0.2px; }
 .ideas-head h2::before { content: "✨ "; }
-.topic { transition: transform 0.15s ease, border-color 0.2s, box-shadow 0.2s, background 0.2s; }
-.topic:hover { transform: translateY(-1px); border-color: var(--accent); box-shadow: 0 0 12px rgba(255, 204, 0, 0.2); }
+.idea-filter { transition: transform 0.15s ease, border-color 0.2s, box-shadow 0.2s, background 0.2s; }
+.idea-filter:hover { transform: translateY(-1px); border-color: var(--accent); box-shadow: 0 0 12px rgba(255, 204, 0, 0.2); }
 .idea {
   position: relative;
   overflow: hidden;
@@ -772,8 +802,8 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .layout > * { animation: none; }
-  .template, .template img, .idea, .topic, .btn, .brand a { transition: none; }
-  .template:hover, .template:hover img, .idea:hover, .topic:hover, .btn-primary:hover:not(:disabled), .brand a:hover { transform: none; }
+  .template, .template img, .idea, .idea-filter, .btn, .brand a { transition: none; }
+  .template:hover, .template:hover img, .idea:hover, .idea-filter:hover, .btn-primary:hover:not(:disabled), .brand a:hover { transform: none; }
 }
 
 /* LinkedIn panel under the meme */

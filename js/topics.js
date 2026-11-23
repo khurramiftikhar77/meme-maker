@@ -1,5 +1,5 @@
-// Caption topic packs. Pick a topic above the caption ideas and every meme suggests captions about it.
-// Work packs first (LinkedIn, Product management, Project management, Agile, AI), then the fun packs.
+// Caption topic packs. MEME_AUDIENCES in js/captions.js turns them into the editor's caption idea
+// filters (LinkedIn, Product management, Project management, Agile, AI first, then the fun packs).
 // Each topic has:
 //   templates: captions written for a specific template, keyed by its first name in js/captions.js,
 //              one string per text box in that template's box order;
@@ -2093,6 +2093,67 @@ window.MEME_TOPICS = {
       ["Hype", "Demo", "Pilot", "Rollout", "Quietly turned off"],
       ["AI writes", "AI reviews", "AI approves", "AI ships", "Human gets blamed"],
       ["2022", "2023", "2024", "2025", "Still waiting for the ROI"],
+    ],
+  },
+  dev: {
+    label: "Developers",
+    templates: {},
+    one: [
+      ["It works on my machine"],
+      ["Deploying on Friday at 16:59"],
+      ["git push --force and pray"],
+      ["The bug only happens during the demo"],
+      ["LGTM (didn't read it)"],
+      ["Me reading my own code from 6 months ago"],
+      ["// TODO: fix later (2019)"],
+      ["The AI wrote it, I just merged it"],
+      ["Flaky test, re-run and hope"],
+      ["Production is the real test environment"],
+    ],
+    two: [
+      ["When the code works", "and you don't know why"],
+      ["When the bug", "is in production only"],
+      ["When the PR has 3,000 lines", "and one approval after 4 seconds"],
+      ["When the PM says", "'It's just a small change'"],
+      ["When you fix one bug", "and create three new ones"],
+      ["When the build is green", "for the first time this week"],
+    ],
+    three: [
+      ["Me", "Fixing one bug", "Creating three new ones"],
+      ["Dev", "Production bug", "Friday 17:00"],
+      ["Junior dev", "Senior dev", "Both googling the same error"],
+      ["Code", "Tests", "Skipped"],
+      ["My code", "Code review", "'Can we rewrite this?'"],
+      ["Local", "Staging", "Production on fire"],
+      ["Me", "Legacy code", "Written by me"],
+      ["Ticket", "Quick fix", "3 day rabbit hole"],
+      ["Error message", "Stack Overflow", "AI chatbot"],
+      ["Dev", "Documentation", "Never written"],
+      ["Bug report", "Can't reproduce", "Closed"],
+      ["Me", "Clean code", "Deadline"],
+      ["PM", "'Small change'", "Database migration"],
+      ["Monday", "Merge conflict", "Lunch"],
+      ["Tests pass", "Deploy", "Everything breaks"],
+    ],
+    four: [
+      ["Write code", "Write tests", "Tests fail", "Delete tests"],
+      ["Bug", "Fix", "New bug", "Fix again"],
+      ["print()", "console.log()", "Debugger", "Asking AI"],
+      ["Local", "Dev", "Staging", "Production on fire"],
+      ["Junior", "Mid", "Senior", "Googles everything anyway"],
+      ["Ticket", "Branch", "PR", "Merge conflict"],
+      ["Monolith", "Microservices", "Kubernetes", "Back to a monolith"],
+      ["Idea", "Prototype", "MVP", "Legacy code"],
+      ["Commit", "Push", "CI red", "git push --force"],
+      ["Write it", "Refactor it", "Rewrite it", "Leave the company"],
+    ],
+    five: [
+      ["Dev", "Finishing the feature", "Production incident", "Dev", "Finishing the feature"],
+      ["Code", "Review", "Test", "Deploy", "Rollback"],
+      ["Mon: plan", "Tue: code", "Wed: debug", "Thu: debug", "Fri: deploy and pray"],
+      ["Bug", "Fix", "Bug", "Fix", "Bug"],
+      ["Local", "CI", "Staging", "Production", "Hotfix"],
+      ["print()", "Logs", "Debugger", "Stack Overflow", "Asking AI"],
     ],
   },
   parenthood: {

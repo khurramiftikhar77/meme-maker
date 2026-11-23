@@ -1,4 +1,4 @@
-// Serves the static meme maker: renders template images into template pages, sends the
+// Serves the static meme maker: renders template images into template and work meme pages, sends the
 // workers.dev address to the real domain, and adds Google AdSense once configured.
 const SITE_HOST = 'mememaker.khurramiftikhar.com';
 
@@ -14,7 +14,9 @@ export default {
     let response = await env.ASSETS.fetch(request);
     if (!(response.headers.get('content-type') || '').includes('text/html')) return response;
 
-    if (url.pathname.startsWith('/templates/')) response = await withTemplateImage(response);
+    if (url.pathname.startsWith('/templates/') || url.pathname.startsWith('/work-memes/')) {
+      response = await withTemplateImage(response);
+    }
     return withAds(response, env);
   },
 };
@@ -61,7 +63,7 @@ async function templateImages() {
   return index;
 }
 
-// Fill in the hero image on the server so search engines see a real <img src>.
+// Fill in template images on the server so search engines see a real <img src>.
 async function withTemplateImage(response) {
   let index;
   try {
@@ -71,7 +73,7 @@ async function withTemplateImage(response) {
     return response;  // js/template-page.js looks the image up in the browser instead
   }
   return new HTMLRewriter()
-    .on('img.template-hero', {
+    .on('img[data-template-names]', {
       element(el) {
         const names = (el.getAttribute('data-template-names') || '').split('|');
         const match = names.map((n) => index.get(nameKey(n))).find(Boolean);

@@ -5,6 +5,28 @@
 //        width is a fraction of the image width; size is the font size as a fraction of the
 //        image's shorter side. Templates without `b` use top/bottom (or evenly spaced) boxes.
 // c:     caption ideas; each is one string per box, in the same order as `b`.
+// a:     optional work and family caption ideas, by audience key (dev, product, project,
+//        office, parents), in the same format as `c`. The editor filters them with
+//        MEME_AUDIENCES and scripts/build-pages.mjs turns them into the /work-memes/ pages.
+
+// The caption idea filters shown above the ideas in the editor, after "All ideas".
+// id:      the ?ideas= value (the /work-memes/ pages link with it) and the remembered choice.
+// keys:    audience keys of the `a` captions here and of MEME_IDEAS.audiences in js/ideas.js.
+// topics:  topic packs in js/topics.js folded into the filter.
+// aliases: older topic pack names that still select the filter.
+window.MEME_AUDIENCES = [
+  { id: 'linkedin', label: 'LinkedIn', keys: ['office'], topics: ['linkedin'], aliases: ['office'] },
+  { id: 'product', label: 'Product management', keys: ['product'], topics: ['product'], aliases: ['pm'] },
+  { id: 'project', label: 'Project management', keys: ['project'], topics: ['project'] },
+  { id: 'agile', label: 'Agile', topics: ['agile'] },
+  { id: 'ai', label: 'AI', topics: ['ai'] },
+  { id: 'dev', label: 'Developers', keys: ['dev'], topics: ['dev'] },
+  { id: 'parents', label: 'Parenting', keys: ['parents'], topics: ['parenthood'], aliases: ['parenthood'] },
+  { id: 'desi', label: 'Desi in Europe', topics: ['desi'] },
+  { id: 'expat', label: 'Expat life', topics: ['expat'] },
+  { id: 'oida', label: 'Oida', topics: ['oida'] },
+];
+
 window.MEME_CAPTIONS = [
   {
     names: ['Drake Hotline Bling', 'Drakeposting', 'Drake'],
@@ -17,6 +39,18 @@ window.MEME_CAPTIONS = [
       ['Replying to the email', 'Hoping it resolves itself'],
       ['Doing the dishes now', 'Letting them soak for 3 days'],
     ],
+    a: {
+      dev: [
+        ['Writing documentation', 'Explaining it in a 40 message Slack thread instead'],
+        ['Reading the error message', 'Pasting it into a search bar and opening 9 tabs'],
+      ],
+      product: [
+        ['Building what users asked for', 'Building what the loudest stakeholder asked for'],
+      ],
+      parents: [
+        ['Going out on Friday night', 'Being asleep on the couch by 9:15pm'],
+      ],
+    },
   },
   {
     names: ['Two Buttons', 'Daily Struggle'],
@@ -28,6 +62,20 @@ window.MEME_CAPTIONS = [
       ['Save money', 'Treat myself', 'Me on payday'],
       ['Admit I am wrong', 'Change the subject', 'Me in every argument'],
     ],
+    a: {
+      dev: [
+        ['Fix the root cause', 'Add another try/catch', 'Me at 5pm on a Friday'],
+      ],
+      product: [
+        ['Say no to the feature request', 'Add it to the backlog forever', 'Product managers'],
+      ],
+      office: [
+        ['Turn the camera on', 'Say my camera is broken', 'Me at the 8am call'],
+      ],
+      parents: [
+        ['Sleep when the baby sleeps', 'Do laundry when the baby sleeps', 'New parents'],
+      ],
+    },
   },
   {
     names: ['Distracted Boyfriend'],
@@ -39,6 +87,18 @@ window.MEME_CAPTIONS = [
       ['A random 3am thought', 'My brain', 'Sleep'],
       ['Another streaming service', 'Me', 'The 4 I already pay for'],
     ],
+    a: {
+      dev: [
+        ['A rewrite from scratch', 'Me', 'The legacy code that pays my salary'],
+        ['A new side project idea', 'Me', 'The 11 unfinished side projects on my GitHub'],
+      ],
+      product: [
+        ['A shiny new feature', 'Leadership', 'The onboarding flow nobody finishes'],
+      ],
+      parents: [
+        ['Ten minutes of quiet on my phone', 'Me', 'The mountain of laundry'],
+      ],
+    },
   },
   {
     names: ['UNO Draw 25 Cards'],
@@ -50,6 +110,18 @@ window.MEME_CAPTIONS = [
       ['Stop watching after one episode', 'Me on a weeknight'],
       ['Close your 47 browser tabs', 'Me'],
     ],
+    a: {
+      dev: [
+        ['Write the tests first', 'Developers'],
+        ['Read the whole ticket before starting', 'Me'],
+      ],
+      office: [
+        ['Say "I do not know" in the meeting', 'Everyone on the call'],
+      ],
+      parents: [
+        ['Eat one bite of broccoli', 'My 4 year old'],
+      ],
+    },
   },
   {
     names: ['Left Exit 12 Off Ramp', 'Exit 12'],
@@ -61,6 +133,17 @@ window.MEME_CAPTIONS = [
       ['Answering the question', 'Telling a long story', 'My uncle'],
       ['Studying', 'Making a study playlist', 'Me before exams'],
     ],
+    a: {
+      dev: [
+        ['Fixing the one-line bug', 'Refactoring the whole module', 'Me'],
+      ],
+      project: [
+        ['Following the project plan', 'Adding a new phase nobody asked for', 'The client'],
+      ],
+      office: [
+        ['Answering the question', 'Sharing my screen to show 14 slides', 'My manager'],
+      ],
+    },
   },
   {
     names: ['Bernie I Am Once Again Asking For Your Support', 'Bernie I Am Once Again Asking', 'I Am Once Again Asking'],
@@ -71,6 +154,17 @@ window.MEME_CAPTIONS = [
       ['', 'I am once again asking my code to just work'],
       ['', 'I am once again asking for one more week of vacation'],
     ],
+    a: {
+      project: [
+        ['', 'I am once again asking you to update your ticket status before standup'],
+      ],
+      office: [
+        ['', 'I am once again asking you to mute yourself when you are not talking'],
+      ],
+      parents: [
+        ['', 'I am once again asking you to put your shoes on'],
+      ],
+    },
   },
   {
     names: ['Change My Mind'],
@@ -82,6 +176,17 @@ window.MEME_CAPTIONS = [
       ['', 'Breakfast for dinner is elite'],
       ['', 'Cats are just tiny landlords'],
     ],
+    a: {
+      dev: [
+        ['', 'Friday deploys are a personality test'],
+      ],
+      product: [
+        ['', 'The MVP is never minimal'],
+      ],
+      office: [
+        ['', 'Most meetings could be a 3 line email'],
+      ],
+    },
   },
   {
     names: ["Gru's Plan", 'Grus Plan', 'Gru Plan'],
@@ -92,6 +197,17 @@ window.MEME_CAPTIONS = [
       ['Learn to code', 'Watch a tutorial', 'Copy the code', 'Have no idea what it does'],
       ['Save money', 'Make a budget', 'See a sale', 'See a sale'],
     ],
+    a: {
+      dev: [
+        ['Make a small change', 'Push it on Friday', 'Production goes down', 'Production goes down'],
+      ],
+      product: [
+        ['Write the perfect spec', 'Share it with engineering', 'Nobody reads the spec', 'Nobody reads the spec'],
+      ],
+      project: [
+        ['Plan the project', 'Add a safety buffer', 'Scope creep eats the buffer', 'Scope creep eats the buffer'],
+      ],
+    },
   },
   {
     names: ['Batman Slapping Robin'],
@@ -103,6 +219,14 @@ window.MEME_CAPTIONS = [
       ['Let me explain the plot of', 'No spoilers'],
       ['Can I copy your homework', 'Change it a little'],
     ],
+    a: {
+      dev: [
+        ['But it works on my machine', 'Production is not your machine'],
+      ],
+      product: [
+        ['What if we just add one more feature before launch', 'We launch first'],
+      ],
+    },
   },
   {
     names: ['Waiting Skeleton', 'Waiting Skeleton Bench'],
@@ -113,6 +237,18 @@ window.MEME_CAPTIONS = [
       ['Waiting for', 'the code to compile'],
       ['Me waiting for', 'my friend who said 5 more minutes'],
     ],
+    a: {
+      dev: [
+        ['Me waiting for', 'the CI pipeline to finish'],
+        ['Me waiting for', 'a code review on my 3 line pull request'],
+      ],
+      project: [
+        ['Me waiting for', 'everyone to update their tickets'],
+      ],
+      parents: [
+        ['Me waiting for', 'my kid to put on the second shoe'],
+      ],
+    },
   },
   {
     names: ['Disaster Girl'],
@@ -123,6 +259,14 @@ window.MEME_CAPTIONS = [
       ['Group project', 'after my part'],
       ['I just said', 'let me fix it real quick'],
     ],
+    a: {
+      dev: [
+        ['It was just', 'a quick fix in production'],
+      ],
+      parents: [
+        ['Dad said I could help', 'make the pancakes'],
+      ],
+    },
   },
   {
     names: ['Woman Yelling At Cat', 'Woman Yelling at a Cat', 'Lady Yelling at Cat'],
@@ -134,6 +278,14 @@ window.MEME_CAPTIONS = [
       ['You have to wake up early', 'Sleep is a social construct'],
       ['Why is the house a mess', 'Art takes time'],
     ],
+    a: {
+      dev: [
+        ['You pushed straight to main!', 'The tests passed. On my laptop. Once.'],
+      ],
+      parents: [
+        ['Put your shoes on, we are late!', 'I wanted the other socks'],
+      ],
+    },
   },
   {
     names: ['Expanding Brain', 'Galaxy Brain', 'Brain Expanding'],
@@ -144,6 +296,14 @@ window.MEME_CAPTIONS = [
       ['Studying', 'Watching study videos', 'Making study notes pretty', 'Praying'],
       ['Saving money', 'Spending wisely', 'Buying what is on sale', 'It was on sale so I saved money'],
     ],
+    a: {
+      dev: [
+        ['Writing clean code', 'Writing helpful comments', 'Writing "TODO: fix later"', 'Changing jobs before later arrives'],
+      ],
+      product: [
+        ['Asking users what they want', 'Watching what users actually do', 'Running an A/B test', 'Shipping it and calling it a beta'],
+      ],
+    },
   },
   {
     names: ['Always Has Been'],
@@ -154,6 +314,14 @@ window.MEME_CAPTIONS = [
       ["Wait, the plan was to wing it?", 'Always has been'],
       ["Wait, it's all snacks?", 'Always has been'],
     ],
+    a: {
+      dev: [
+        ['Wait, the whole app runs on one cron job?', 'Always has been'],
+      ],
+      office: [
+        ['Wait, this meeting could have been an email?', 'Always has been'],
+      ],
+    },
   },
   {
     names: ['Buff Doge vs. Cheems', 'Buff Doge vs Cheems', 'Swole Doge vs Cheems'],
@@ -173,6 +341,11 @@ window.MEME_CAPTIONS = [
       ['Everyone has plans', 'I have no plans', 'Still too tired to go out'],
       ['When the wifi is down', 'Phone data is gone', 'Forced to talk to family'],
     ],
+    a: {
+      office: [
+        ['Joining the meeting on time', 'Waiting for the host', 'Host: "running 15 min late"'],
+      ],
+    },
   },
   {
     names: ['Tuxedo Winnie The Pooh', 'Tuxedo Winnie the Pooh', 'Fancy Winnie The Pooh'],
@@ -184,6 +357,14 @@ window.MEME_CAPTIONS = [
       ['Copy and paste', 'Reusable code architecture'],
       ['Being late', 'Arriving fashionably'],
     ],
+    a: {
+      product: [
+        ['We have no idea', 'We are in a discovery phase'],
+      ],
+      office: [
+        ['I forgot', 'Circling back on this'],
+      ],
+    },
   },
   {
     names: ['Epic Handshake', 'Predator Handshake'],
@@ -195,6 +376,17 @@ window.MEME_CAPTIONS = [
       ['Introverts', 'Cancelled plans', 'Pure happiness'],
       ['Me', 'My dog', 'Loving the couch'],
     ],
+    a: {
+      dev: [
+        ['Developers', 'QA testers', '"It worked yesterday"'],
+      ],
+      product: [
+        ['Engineering', 'Design', 'Finding out the spec changed again'],
+      ],
+      parents: [
+        ['Working parents', 'Toddlers', 'Thinking 6am is a fine time to be awake'],
+      ],
+    },
   },
   {
     names: ['Monkey Puppet', 'Awkward Look Monkey Puppet'],
@@ -205,6 +397,11 @@ window.MEME_CAPTIONS = [
       ['When the boss asks', 'who pushed to production on Friday'],
       ['When someone asks', 'if you read the group chat'],
     ],
+    a: {
+      project: [
+        ['When I ask in the meeting', 'who owns this action item'],
+      ],
+    },
   },
   {
     names: ['Anakin Padme 4 Panel', 'For The Better Right'],
@@ -215,6 +412,11 @@ window.MEME_CAPTIONS = [
       ["I'm taking a quick nap", 'Just 20 minutes, right?', '', 'Just 20 minutes, right?'],
       ["I'm going to the store", 'Only for milk, right?', '', 'Only for milk, right?'],
     ],
+    a: {
+      product: [
+        ["We're adding AI to the product", 'To solve a real user problem, right?', '', 'To solve a real user problem, right?'],
+      ],
+    },
   },
   {
     names: ['Hide the Pain Harold', 'Hide The Pain Harold'],
@@ -225,6 +427,14 @@ window.MEME_CAPTIONS = [
       ['Smiling in the meeting', 'that could have been an email'],
       ['When the doctor asks', 'how much water you drink'],
     ],
+    a: {
+      product: [
+        ['When the CEO says', '"I had an idea in the shower"'],
+      ],
+      parents: [
+        ['Me on a video call', 'while my toddler announces he needs the potty'],
+      ],
+    },
   },
   {
     names: ['Mocking Spongebob', 'Spongebob Mocking'],
@@ -235,6 +445,11 @@ window.MEME_CAPTIONS = [
       ['It is just a game', 'iT iS jUsT a GaMe'],
       ['Money cannot buy happiness', 'mOnEy CaNnOt BuY hApPiNeSs'],
     ],
+    a: {
+      dev: [
+        ['Did you try clearing the cache?', 'dId YoU tRy ClEaRiNg ThE cAcHe?'],
+      ],
+    },
   },
   {
     names: ['Roll Safe Think About It', 'Roll Safe', 'Think About It'],
@@ -245,6 +460,11 @@ window.MEME_CAPTIONS = [
       ['You cannot lose your keys', 'if you never lock the door'],
       ['Cannot get bad grades', 'if you never check your grades'],
     ],
+    a: {
+      product: [
+        ['You cannot miss a deadline', 'if the roadmap has no dates'],
+      ],
+    },
   },
   {
     names: ['Is This A Pigeon', 'Is This a Butterfly'],
@@ -256,6 +476,14 @@ window.MEME_CAPTIONS = [
       ['A cheese slice', 'Me at midnight', 'Is this dinner?'],
       ['Turning it off and on', 'Me', 'Is this IT support?'],
     ],
+    a: {
+      product: [
+        ['A user clicking a button once', 'Product manager', 'Is this product market fit?'],
+      ],
+      parents: [
+        ['Leftover mac and cheese', 'Parents', 'Is this dinner?'],
+      ],
+    },
   },
   {
     names: ['Trade Offer'],
@@ -267,6 +495,11 @@ window.MEME_CAPTIONS = [
       ['I receive: your homework', 'You receive: my friendship'],
       ['I receive: 8 hours of sleep', 'You receive: a functional me'],
     ],
+    a: {
+      product: [
+        ['I receive: your feature request', 'You receive: a spot on the someday list'],
+      ],
+    },
   },
   {
     names: ['X, X Everywhere', 'X X Everywhere', 'Buzz Lightyear Everywhere'],
@@ -277,6 +510,11 @@ window.MEME_CAPTIONS = [
       ['Spoilers', 'Spoilers everywhere'],
       ['Cat hair', 'Cat hair everywhere'],
     ],
+    a: {
+      dev: [
+        ['Console logs', 'Console logs everywhere'],
+      ],
+    },
   },
   {
     names: ["Y'all Got Any More Of That", 'Yall Got Any More Of That', 'Dave Chappelle'],
@@ -287,6 +525,11 @@ window.MEME_CAPTIONS = [
       ["Y'all got any more of that", 'motivation'],
       ["Y'all got any more of that", 'free pizza from the meeting'],
     ],
+    a: {
+      office: [
+        ["Y'all got any more of that", 'free pizza from the all hands meeting'],
+      ],
+    },
   },
   {
     names: ['One Does Not Simply', 'One Does Not Simply Walk into Mordor', 'Boromir'],
@@ -297,6 +540,11 @@ window.MEME_CAPTIONS = [
       ['One does not simply', 'fix a bug without making two more'],
       ['One does not simply', 'take a 20 minute nap'],
     ],
+    a: {
+      dev: [
+        ['One does not simply', 'rename a variable in a legacy codebase'],
+      ],
+    },
   },
   {
     names: ['Ancient Aliens', 'Ancient Aliens Guy'],
@@ -317,6 +565,11 @@ window.MEME_CAPTIONS = [
       ['Not sure if they are joking', 'or I should be worried'],
       ['Not sure if it is a nap', 'or I am asleep for the night'],
     ],
+    a: {
+      product: [
+        ['Not sure if users love the new feature', 'or just cannot find the close button'],
+      ],
+    },
   },
   {
     names: ['Clown Applying Makeup'],
@@ -327,6 +580,14 @@ window.MEME_CAPTIONS = [
       ['I will buy just one thing', 'It is on sale', 'Free shipping over $50', 'Spent $120'],
       ['Just one episode', 'It is only 40 minutes', 'Season finale is next', 'Sunrise'],
     ],
+    a: {
+      dev: [
+        ['It is a one line fix', 'No need for tests', 'Deploy on Friday afternoon', 'Phone on silent all weekend'],
+      ],
+      parents: [
+        ['The kids will love this healthy dinner', 'I will make it fun', 'They will not even notice', 'Ordering pizza at 7pm'],
+      ],
+    },
   },
   {
     names: ['This Is Fine', 'This is Fine Dog'],
@@ -337,6 +598,14 @@ window.MEME_CAPTIONS = [
       ['My bank account after the weekend', 'this is fine'],
       ['Adulting', 'this is fine'],
     ],
+    a: {
+      dev: [
+        ['Production on Friday at 5pm', 'this is fine'],
+      ],
+      project: [
+        ['The project plan after week one', 'this is fine'],
+      ],
+    },
   },
   {
     names: ['Panik Kalm Panik', 'Panik Kalm', 'Panik'],
@@ -347,6 +616,14 @@ window.MEME_CAPTIONS = [
       ['Boss wants to talk', 'He wants to give a raise', 'To someone else'],
       ['Code is broken', 'Found the bug', 'It is in production'],
     ],
+    a: {
+      project: [
+        ['The deadline is Friday', 'The client moved it to next month', 'And added 12 new requirements'],
+      ],
+      parents: [
+        ['School project due tomorrow', 'It is just a poster', 'It is a working volcano'],
+      ],
+    },
   },
   {
     names: ['Leonardo Dicaprio Cheers', 'Leonardo DiCaprio Cheers', 'Leo Toast'],
@@ -357,6 +634,11 @@ window.MEME_CAPTIONS = [
       ['To the dev who', 'wrote comments in the code'],
       ['Cheers to', 'surviving another Monday'],
     ],
+    a: {
+      office: [
+        ["Here's to everyone who", 'ends the meeting 5 minutes early'],
+      ],
+    },
   },
   {
     names: ['Oprah You Get A', 'Oprah You Get A Car'],
@@ -367,6 +649,11 @@ window.MEME_CAPTIONS = [
       ['You get homework', 'everybody gets homework'],
       ['You get a group chat notification', 'everybody gets one'],
     ],
+    a: {
+      project: [
+        ['You get a dependency', 'everybody gets a dependency'],
+      ],
+    },
   },
   {
     names: ['Evil Kermit', 'Kermit Hood'],
@@ -377,6 +664,11 @@ window.MEME_CAPTIONS = [
       ['Me: study for the exam', 'Also me: you can learn it the night before'],
       ['Me: be productive today', 'Also me: reorganize your playlist'],
     ],
+    a: {
+      office: [
+        ['Me: I will answer that email today', 'Also me: mark it as unread for the 4th time'],
+      ],
+    },
   },
   {
     names: ['Hard To Swallow Pills', 'Hard to Swallow Pills'],
@@ -387,6 +679,11 @@ window.MEME_CAPTIONS = [
       ['Hard to swallow pills', 'Monday comes every week'],
       ['Hard to swallow pills', 'Coffee is not a meal'],
     ],
+    a: {
+      dev: [
+        ['Hard to swallow pills', 'The bug is in your code, not in the framework'],
+      ],
+    },
   },
   {
     names: ['Surprised Pikachu', 'Shocked Pikachu'],
@@ -398,6 +695,11 @@ window.MEME_CAPTIONS = [
       ['Me: does not study', 'Exam: is hard', 'Me:'],
       ['Me: says I will remember', 'Me: does not write it down', 'Me: forgets'],
     ],
+    a: {
+      dev: [
+        ['Me: skips the tests', 'Me: deploys on Friday', 'Me: why is my phone ringing on Saturday'],
+      ],
+    },
   },
   {
     names: ['Spongebob Ight Imma Head Out', 'Ight Imma Head Out'],
@@ -408,6 +710,11 @@ window.MEME_CAPTIONS = [
       ['When the teacher says', 'we will have a pop quiz'],
       ['When the host says', 'help clean up'],
     ],
+    a: {
+      project: [
+        ['When the sponsor says', '"just one more small requirement"'],
+      ],
+    },
   },
   {
     names: ['Laughing Leo', 'Leonardo Laughing'],
@@ -429,6 +736,11 @@ window.MEME_CAPTIONS = [
       ['A whole army', 'One Lego on the floor'],
       ['My willpower', 'A sale sign'],
     ],
+    a: {
+      dev: [
+        ['A senior engineer with 15 years of experience', 'One timezone bug'],
+      ],
+    },
   },
   {
     names: ['Sleeping Shaq'],
@@ -439,6 +751,11 @@ window.MEME_CAPTIONS = [
       ['Mom yelling my name', 'me pretending to be asleep'],
       ['Notifications at night', 'me wide awake at 3am'],
     ],
+    a: {
+      office: [
+        ['The 3pm meeting', 'Someone says there is cake in the kitchen'],
+      ],
+    },
   },
   {
     names: ['Success Kid', 'Success Baby'],
@@ -449,6 +766,11 @@ window.MEME_CAPTIONS = [
       ['Made it home', 'before the rain'],
       ['Got the last cookie', 'nobody noticed'],
     ],
+    a: {
+      parents: [
+        ['Got all three kids to school', 'on time and wearing shoes'],
+      ],
+    },
   },
   {
     names: ['Brace Yourselves X is Coming', 'Brace Yourselves', 'Imminent Ned'],
@@ -459,6 +781,11 @@ window.MEME_CAPTIONS = [
       ['Brace yourselves', 'the end of the month is coming'],
       ['Brace yourselves', 'pumpkin spice is coming'],
     ],
+    a: {
+      project: [
+        ['Brace yourselves', 'the end of quarter status report is coming'],
+      ],
+    },
   },
   {
     names: ['Grandma Finds The Internet', 'Grandma Finds the Internet'],
@@ -479,6 +806,11 @@ window.MEME_CAPTIONS = [
       ['What if I told you', 'naps count as self care'],
       ['What if I told you', 'the bug was a missing comma'],
     ],
+    a: {
+      dev: [
+        ['What if I told you', 'the bug was a missing comma the whole time'],
+      ],
+    },
   },
   {
     names: ['Bad Luck Brian'],
@@ -489,6 +821,11 @@ window.MEME_CAPTIONS = [
       ['Wins a free trip', 'for one, to the dentist'],
       ['Gets a text', 'it is from the bank'],
     ],
+    a: {
+      parents: [
+        ['Kids finally asleep', 'the dog starts barking at a leaf'],
+      ],
+    },
   },
   {
     names: ['First World Problems', 'First World Problems Girl'],
@@ -509,6 +846,11 @@ window.MEME_CAPTIONS = [
       ['When you push the door', 'that says pull'],
       ['When you forget', 'why you walked into the room'],
     ],
+    a: {
+      project: [
+        ['When the task marked 90% done', 'has been 90% done for 6 weeks'],
+      ],
+    },
   },
   {
     names: ['Jack Sparrow Being Chased'],
@@ -519,6 +861,14 @@ window.MEME_CAPTIONS = [
       ['Me with the last slice', 'my siblings'],
       ['Me', 'deadlines'],
     ],
+    a: {
+      project: [
+        ['Me', 'the Gantt chart I promised to update'],
+      ],
+      parents: [
+        ['Me', 'a toddler holding a permanent marker'],
+      ],
+    },
   },
   {
     names: ['Car Salesman Slaps Roof Of Car', 'Car Salesman Slaps Hood', 'Slaps Roof Of Car'],
@@ -529,6 +879,11 @@ window.MEME_CAPTIONS = [
       ['*Slaps roof of closet*', 'This bad boy can fit so many clothes I never wear'],
       ['*Slaps roof of brain*', 'This bad boy can fit so many useless facts'],
     ],
+    a: {
+      dev: [
+        ['*Slaps roof of the monolith*', 'This bad boy can fit so many microservices in it'],
+      ],
+    },
   },
   {
     names: ['Guy Holding Cardboard Sign', 'Cardboard Sign'],
@@ -550,6 +905,11 @@ window.MEME_CAPTIONS = [
       ['Leftovers are better the next day'],
       ['The group chat does not need to be at 3am'],
     ],
+    a: {
+      product: [
+        ['If everything is top priority, nothing is top priority'],
+      ],
+    },
   },
   {
     names: ['Megamind peeking', 'Megamind Peeking', 'No Bitches Megamind'],
@@ -560,6 +920,11 @@ window.MEME_CAPTIONS = [
       ['No', 'snacks?'],
       ['No', 'replies?'],
     ],
+    a: {
+      parents: [
+        ['No', 'hot coffee?'],
+      ],
+    },
   },
   {
     names: ['Two guys on a bus', 'Two Guys On A Bus'],
@@ -571,6 +936,11 @@ window.MEME_CAPTIONS = [
       ['People who sleep at 10pm', 'Me watching the sunrise'],
       ['Students who studied', 'Me guessing every answer'],
     ],
+    a: {
+      office: [
+        ['People who muted themselves', 'Me sharing my weekend plans with the whole call'],
+      ],
+    },
   },
   {
     names: ['Scroll Of Truth', 'Scroll of Truth'],
@@ -591,6 +961,11 @@ window.MEME_CAPTIONS = [
       ['When someone says', 'pizza is here'],
       ['Me seeing', 'a sale'],
     ],
+    a: {
+      office: [
+        ['When someone says', "\"let's take this offline\""],
+      ],
+    },
   },
   {
     names: ["But That's None Of My Business", 'But Thats None Of My Business', 'Kermit Tea'],
@@ -631,6 +1006,11 @@ window.MEME_CAPTIONS = [
       ['I do not get the joke', 'and at this point I am too afraid to ask'],
       ['I do not know what my job title means', 'and at this point I am too afraid to ask'],
     ],
+    a: {
+      product: [
+        ['I still do not know what our north star metric is', 'and at this point I am too afraid to ask'],
+      ],
+    },
   },
   {
     names: ['Grumpy Cat'],
@@ -651,6 +1031,11 @@ window.MEME_CAPTIONS = [
       ['Yo dawg, I heard you like naps', 'so we made your nap take a nap'],
       ['Yo dawg, I heard you like memes', 'so I put a meme in your meme'],
     ],
+    a: {
+      product: [
+        ['Yo dawg, I heard you like roadmaps', 'so we made a roadmap for your roadmap'],
+      ],
+    },
   },
   {
     names: ['Mugatu So Hot Right Now', 'So Hot Right Now'],
@@ -671,6 +1056,11 @@ window.MEME_CAPTIONS = [
       ['We should finish the project', 'No, we push the deadline'],
       ['We should answer the email', 'No, we mark it unread'],
     ],
+    a: {
+      dev: [
+        ['We should handle the error', 'No, we log it and move on'],
+      ],
+    },
   },
   {
     names: ['Arthur Fist', 'Clenched Fist'],
@@ -681,6 +1071,11 @@ window.MEME_CAPTIONS = [
       ['When someone spoils', 'the ending'],
       ['When the delivery', 'is 1 minute late'],
     ],
+    a: {
+      office: [
+        ['When someone writes', '"per my last email"'],
+      ],
+    },
   },
   {
     names: ['Creepy Condescending Wonka', 'Condescending Wonka'],
@@ -701,6 +1096,11 @@ window.MEME_CAPTIONS = [
       ['I want you', 'to drink some water'],
       ['I want you', 'to go to bed'],
     ],
+    a: {
+      project: [
+        ['I want you', 'to log your hours by Friday'],
+      ],
+    },
   },
   {
     names: ['Dr Evil Laser', 'Dr. Evil Laser', 'Dr Evil Air Quotes'],
@@ -711,6 +1111,14 @@ window.MEME_CAPTIONS = [
       ['Just "one" episode', ''],
       ['"Healthy" snacks', ''],
     ],
+    a: {
+      project: [
+        ['A "rough" estimate', ''],
+      ],
+      parents: [
+        ['A "relaxing" family holiday', ''],
+      ],
+    },
   },
   {
     names: ['Aaaaand Its Gone', 'And Its Gone'],
@@ -721,6 +1129,11 @@ window.MEME_CAPTIONS = [
       ['Bought snacks for the week', 'aaaaand they are gone'],
       ['Phone at 100%', 'aaaaand it is gone'],
     ],
+    a: {
+      project: [
+        ['The project buffer', 'aaaaand it is gone'],
+      ],
+    },
   },
   {
     names: ['Mr Krabs Blur Meme', 'Confused Mr Krabs', 'Mr Krabs Blur'],
@@ -731,6 +1144,11 @@ window.MEME_CAPTIONS = [
       ['Me when someone asks', 'what my plans are for the future'],
       ['Me trying to follow', 'the group chat after 200 messages'],
     ],
+    a: {
+      dev: [
+        ['Me reading', 'a stack trace that is 400 lines long'],
+      ],
+    },
   },
   {
     names: ['They\'re The Same Picture', 'Theyre The Same Picture', 'Corporate Needs You To Find The Differences'],
@@ -740,6 +1158,11 @@ window.MEME_CAPTIONS = [
       ['Find the difference between Monday and Tuesday', 'They are the same picture'],
       ['Find the difference between my code and the tutorial', 'They are the same picture'],
     ],
+    a: {
+      office: [
+        ['Corporate needs you to find the differences between "quick sync" and "meeting"', 'They are the same picture'],
+      ],
+    },
   },
   {
     names: ['Look At Me', 'Look At Me Im The Captain Now', 'Captain Phillips'],
@@ -750,6 +1173,11 @@ window.MEME_CAPTIONS = [
       ['Look at me', 'I make the playlist now'],
       ['Look at me', 'I am the chef now'],
     ],
+    a: {
+      parents: [
+        ['Look at me', 'I say "because I said so" now'],
+      ],
+    },
   },
   {
     names: ['Star Wars Yoda', 'Yoda'],
@@ -760,6 +1188,11 @@ window.MEME_CAPTIONS = [
       ['Snacks you seek', 'empty the fridge is'],
       ['Weekend it is', 'nothing you will do'],
     ],
+    a: {
+      parents: [
+        ['Asleep the baby is', 'move you must not'],
+      ],
+    },
   },
   {
     names: ['Philosoraptor'],
@@ -770,6 +1203,11 @@ window.MEME_CAPTIONS = [
       ['If money does not grow on trees', 'why do banks have branches?'],
       ['If you clean a vacuum', 'are you the vacuum cleaner?'],
     ],
+    a: {
+      office: [
+        ['If nobody reads the meeting notes', 'did the meeting really happen?'],
+      ],
+    },
   },
   {
     names: ['Third World Skeptical Kid'],
@@ -780,6 +1218,11 @@ window.MEME_CAPTIONS = [
       ['So you are telling me', 'you have 3 streaming apps and nothing to watch?'],
       ['So you are telling me', 'you bought a gym membership in January?'],
     ],
+    a: {
+      parents: [
+        ['So you are telling me', 'I have to wear a coat because YOU are cold?'],
+      ],
+    },
   },
   {
     names: ['Inhaling Seagull'],
@@ -789,6 +1232,11 @@ window.MEME_CAPTIONS = [
       ['Me', 'seeing', 'free', 'pizza'],
       ['When', 'mom says', 'we have food', 'at home'],
     ],
+    a: {
+      office: [
+        ['Me', 'when someone', 'replies all with', 'THANKS!'],
+      ],
+    },
   },
   {
     names: ['Spider Man Triple', 'Spiderman Pointing at Spiderman', 'Spider-Man Pointing', 'Spiderman Pointing'],
@@ -809,6 +1257,11 @@ window.MEME_CAPTIONS = [
       ['Teacher', 'Smart kid', 'Me'],
       ['Me', 'Latest series', 'The 5 shows I never finished'],
     ],
+    a: {
+      project: [
+        ['The team', 'The exciting kickoff meeting', 'The risk register'],
+      ],
+    },
   },
   {
     names: ['Soldier protecting sleeping child', 'Soldier Protecting Sleeping Child'],
@@ -818,6 +1271,11 @@ window.MEME_CAPTIONS = [
       ['My antivirus', 'My computer', 'One suspicious download'],
       ['Me', 'My weekend', 'Work emails'],
     ],
+    a: {
+      parents: [
+        ['Me', 'The baby who finally fell asleep', 'The delivery driver ringing the doorbell'],
+      ],
+    },
   },
   {
     names: ['Gus Fring we are not the same', 'Gus Fring We Are Not The Same', 'We Are Not The Same'],
@@ -827,6 +1285,11 @@ window.MEME_CAPTIONS = [
       ['You save money', 'I save memes', 'We are not the same'],
       ['You test your code', 'I test my luck', 'We are not the same'],
     ],
+    a: {
+      parents: [
+        ['You wake up to an alarm', 'I wake up to a small foot in my face', 'We are not the same'],
+      ],
+    },
   },
   {
     names: ['Average Fan vs Average Enjoyer', 'Average Enjoyer'],
@@ -846,6 +1309,11 @@ window.MEME_CAPTIONS = [
       ['Me', 'Spending all my money', 'Where did my money go?'],
       ['Me', 'Staying up late', 'Why am I so tired?'],
     ],
+    a: {
+      project: [
+        ['The client', 'Changing the scope every week', 'Why is the project late?'],
+      ],
+    },
   },
   {
     names: ['American Chopper Argument'],
@@ -854,6 +1322,11 @@ window.MEME_CAPTIONS = [
       ['Pineapple goes on pizza', 'It absolutely does not', 'It is sweet and salty', 'It is fruit!', 'Tomato is a fruit too'],
       ['Cats are better', 'Dogs are better', 'Cats are independent', 'Dogs love you', 'Get both'],
     ],
+    a: {
+      dev: [
+        ['It is a feature', 'It is a bug', 'Users love it', 'Users found it', 'Add it to the release notes'],
+      ],
+    },
   },
   {
     names: ['Finding Neverland'],
@@ -872,6 +1345,11 @@ window.MEME_CAPTIONS = [
       ['How do we improve morale?', 'Pizza party', 'Bonuses', 'Fewer meetings'],
       ['How do we hit the deadline?', 'Work weekends', 'Hire more people', 'Cut the scope'],
     ],
+    a: {
+      dev: [
+        ['How do we make the app faster?', 'Add caching', 'Optimise the queries', 'Rewrite it in a new language'],
+      ],
+    },
   },
   {
     names: ['Sad Keanu'],
@@ -900,6 +1378,11 @@ window.MEME_CAPTIONS = [
       ["How much did you spend?", "Only a little, on everything"],
       ["Did you do the homework?", "Which homework?"],
     ],
+    a: {
+      office: [
+        ['When is the team building day?', 'Saturday'],
+      ],
+    },
   },
   {
     names: ["Marked Safe From"],
@@ -910,6 +1393,11 @@ window.MEME_CAPTIONS = [
       ["Marked safe from", "the group project"],
       ["Marked safe from", "being productive today"],
     ],
+    a: {
+      office: [
+        ['Marked safe from', 'the meeting that could have been an email'],
+      ],
+    },
   },
   {
     names: ["Confused Gandalf", "Gandalf No Memory"],
@@ -920,6 +1408,11 @@ window.MEME_CAPTIONS = [
       ["Me walking into a room", "and forgetting why"],
       ["Monday me", "looking at Friday me's to-do list"],
     ],
+    a: {
+      dev: [
+        ['Opening a file I wrote 6 months ago', 'I have no memory of this place'],
+      ],
+    },
   },
   {
     names: ["Kombucha Girl"],
@@ -930,6 +1423,11 @@ window.MEME_CAPTIONS = [
       ["Opening the bill", "Seeing the discount"],
       ["Starting the gym", "Seeing the results"],
     ],
+    a: {
+      product: [
+        ['Hearing the new feature request', 'Hearing it comes with extra budget'],
+      ],
+    },
   },
   {
     names: ["Shut Up And Take My Money Fry", "Shut Up And Take My Money"],
@@ -940,6 +1438,11 @@ window.MEME_CAPTIONS = [
       ["Socks that never get lost", "Shut up and take my money"],
       ["An alarm that lets me sleep in", "Shut up and take my money"],
     ],
+    a: {
+      product: [
+        ['A customer who describes the problem instead of the solution', 'Shut up and take my money'],
+      ],
+    },
   },
   {
     names: ["Black Girl Wat", "Wat Girl"],
@@ -960,6 +1463,14 @@ window.MEME_CAPTIONS = [
       ["Saying yes once", "Becoming the office IT guy"],
       ["Buying one plant", "Owning a jungle"],
     ],
+    a: {
+      dev: [
+        ['Updating one package', 'Rebuilding the entire project'],
+      ],
+      project: [
+        ['One "small" scope change', 'The whole project timeline'],
+      ],
+    },
   },
   {
     names: ["Imagination Spongebob", "Spongebob Imagination", "Spongebob Rainbow"],
@@ -990,6 +1501,11 @@ window.MEME_CAPTIONS = [
       ["When mom asks", "who broke the vase"],
       ["Me watching a movie with my parents", "when a kissing scene starts"],
     ],
+    a: {
+      parents: [
+        ['When your kid asks', 'where babies come from in the supermarket queue'],
+      ],
+    },
   },
   {
     names: ["Sad Affleck", "Sad Ben Affleck"],
@@ -1030,6 +1546,11 @@ window.MEME_CAPTIONS = [
       ["Joins the group project", "on presentation day"],
       ["Asks to borrow a pen", "keeps it forever"],
     ],
+    a: {
+      office: [
+        ['Books a meeting at 4:55pm on Friday', 'calls it a quick sync'],
+      ],
+    },
   },
   {
     names: ["Good Guy Greg"],
@@ -1040,6 +1561,11 @@ window.MEME_CAPTIONS = [
       ["Eats the last slice", "orders another pizza"],
       ["Sends you a meme", "explains it when you do not get it"],
     ],
+    a: {
+      office: [
+        ['Schedules a 1 hour meeting', 'cancels it and sends a 3 line email instead'],
+      ],
+    },
   },
   {
     names: ["Socially Awkward Penguin", "Awkward Penguin"],
@@ -1050,6 +1576,11 @@ window.MEME_CAPTIONS = [
       ["Someone waves", "waves back at the person behind me"],
       ["Rehearses ordering pizza", "still says it wrong"],
     ],
+    a: {
+      office: [
+        ['Forgets to unmute', 'gives the whole update to nobody'],
+      ],
+    },
   },
   {
     names: ["Insanity Wolf"],
@@ -1090,6 +1621,11 @@ window.MEME_CAPTIONS = [
       ["My screen time", "is too damn high"],
       ["The pile of laundry", "is too damn high"],
     ],
+    a: {
+      office: [
+        ['The number of unread emails', 'is too damn high'],
+      ],
+    },
   },
   {
     names: ["Dwight Schrute", "Dwight False"],
@@ -1120,6 +1656,11 @@ window.MEME_CAPTIONS = [
       ["Remember when the internet made a noise?", "Pepperidge Farm remembers"],
       ["Remember when I had free time?", "Pepperidge Farm remembers"],
     ],
+    a: {
+      parents: [
+        ['Remember going to the bathroom alone?', 'Pepperidge Farm remembers'],
+      ],
+    },
   },
   {
     names: ["Am I The Only One Around Here", "Walter Sobchak"],
@@ -1130,6 +1671,11 @@ window.MEME_CAPTIONS = [
       ["Am I the only one around here", "who mutes their mic?"],
       ["Am I the only one around here", "who returns shopping carts?"],
     ],
+    a: {
+      office: [
+        ['Am I the only one around here', 'who refills the coffee machine?'],
+      ],
+    },
   },
   {
     names: ["Sparta Leonidas", "This Is Sparta"],

@@ -54,7 +54,7 @@
     ideas: $('#ideas'),
     ideasStatus: $('#ideasStatus'),
     ideaList: $('#ideaList'),
-    topicPicker: $('#topicPicker'),
+    ideaFilters: $('#ideaFilters'),
     liTools: $('#liTools'),
     exportSize: $('#exportSize'),
     exportBg: $('#exportBg'),
@@ -1191,9 +1191,9 @@
 
   function suggestPostText(next = false) {
     if (next) postIndex++;
-    const set = POSTS[currentTopic] || POSTS.general;
+    const set = POSTS[ideaFilter] || POSTS.all;
     if (!set) return;
-    const hooks = seededShuffle(set.hooks, `${state.imageName}:${currentTopic}`);
+    const hooks = seededShuffle(set.hooks, `${state.imageName}:${ideaFilter}`);
     const hook = hooks[postIndex % hooks.length];
     els.postText.value = `${hook}\n\n${set.tags.join(' ')}`;
     postEdited = false;
@@ -1400,17 +1400,36 @@
       .slice(0, 10);
   }
 
-  /* Topic packs (js/topics.js): the labels and captions live there; buttons are built from it. */
+  /* Caption idea filters. MEME_AUDIENCES (js/captions.js) lists them; each one folds together
+     audience captions (`a` in js/captions.js and MEME_IDEAS.audiences) and topic packs
+     (js/topics.js). The /work-memes/ pages link to the editor with ?ideas=<id>, which wins
+     over the last choice remembered on this device. */
 
   const TOPICS = window.MEME_TOPICS || {};
-  const TOPIC_KEY = 'meme-maker-topic';
-  let currentTopic = TOPICS.linkedin ? 'linkedin' : 'general';
-  try {
-    const saved = localStorage.getItem(TOPIC_KEY);
-    if (saved && TOPICS[saved]) currentTopic = saved;
-  } catch { /* storage blocked: keep the default */ }
+  const FILTERS = (window.MEME_AUDIENCES || []).map((f) => ({
+    keys: [],
+    aliases: [],
+    ...f,
+    topics: (f.topics || []).filter((k) => TOPICS[k]),
+  }));
+  const FILTER_KEY = 'meme-maker-topic';
+  const IDEAS_HINT = 'Tap an idea to use it, or tap the text on the image to write your own.';
 
-  let openMeme = null;      // { builtIn, template } of the picture being edited
+  // A filter id from a URL or saved value, accepting the old topic pack names too.
+  function filterId(value) {
+    if (value === 'all') return 'all';
+    const match = FILTERS.find((f) => f.id === value || f.aliases.includes(value));
+    return match ? match.id : null;
+  }
+
+  let ideaFilter = filterId(new URLSearchParams(location.search).get('ideas'));
+  if (!ideaFilter) {
+    try { ideaFilter = filterId(localStorage.getItem(FILTER_KEY)); } catch { /* storage blocked */ }
+  }
+  // LinkedIn is the default: MemeLink is made for LinkedIn work humour.
+  ideaFilter = ideaFilter || (FILTERS.some((f) => f.id === 'linkedin') ? 'linkedin' : 'all');
+
+  let ideaContext = null;   // { builtIn, template, boxes } of the picture being edited
   let lastApplied = null;   // the idea last put on the image, to tell it apart from the user's own text
 
   function useIdea(texts) {
@@ -1424,61 +1443,89 @@
     return !lastApplied || (now.length === lastApplied.length && now.every((t, i) => t === lastApplied[i]));
   }
 
-  function topicIdeas(topic, builtIn, template, boxes) {
-    const seed = `${template?.name || 'meme'}:${currentTopic}`;
-    const specific = builtIn ? topic.templates[builtIn.names[0]] || [] : [];
-    const seen = new Set();
-    return fitAll([...specific, ...seededShuffle(exactPool(topic, boxes), seed)], boxes)
-      .filter((idea) => {
-        const key = idea.join('|').toLowerCase();
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      })
-      .slice(0, 12);
-  }
-
-  function renderTopicPicker() {
-    // Work topics first, then General, then the fun packs.
-    const options = Object.entries(TOPICS).map(([key, t]) => [key, t.label]);
-    const after = options.findIndex(([key]) => key === 'ai');
-    options.splice(after + 1, 0, ['general', 'General']);
-    els.topicPicker.replaceChildren(...options.map(([key, label]) => {
+  function renderIdeaFilters() {
+    // Work filters first, then "All ideas", then the fun packs.
+    const options = [...FILTERS];
+    const afterWork = options.findIndex((f) => f.id === 'ai');
+    options.splice(afterWork + 1, 0, { id: 'all', label: 'All ideas' });
+    els.ideaFilters.replaceChildren(...options.map((option) => {
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = 'topic';
-      btn.textContent = label;
-      btn.setAttribute('aria-pressed', String(key === currentTopic));
+      btn.className = 'idea-filter';
+      btn.textContent = option.label;
+      btn.setAttribute('aria-pressed', String(option.id === ideaFilter));
       btn.addEventListener('click', () => {
-        if (key === currentTopic) return;
-        currentTopic = key;
-        try { localStorage.setItem(TOPIC_KEY, key); } catch { /* ignore */ }
-        renderTopicPicker();
+        if (option.id === ideaFilter) return;
+        ideaFilter = option.id;
+        try { localStorage.setItem(FILTER_KEY, option.id); } catch { /* ignore */ }
+        renderIdeaFilters();
         // Swap the caption on the image too, unless the user has written their own.
-        if (openMeme) showIdeas(openMeme.builtIn, openMeme.template, { fill: textIsOurs() });
+        if (ideaContext) showIdeas(ideaContext.builtIn, ideaContext.template, { fill: textIsOurs() });
       });
       return btn;
     }));
   }
-  renderTopicPicker();
+
+  // One line per text box: ideas written for another number of boxes are left out (see fitAll).
+  function uniqueIdeas(ideas, boxes) {
+    const seen = new Set();
+    return fitAll(ideas, boxes)
+      .filter((idea) => {
+        const key = idea.join('|').toLowerCase();
+        if (!idea.some(Boolean) || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+  }
+
+  // Captions written for the open template under a filter: its audience captions and the
+  // topic packs' captions for it.
+  function ownIdeas(filter, builtIn) {
+    if (!builtIn) return [];
+    return [
+      ...filter.keys.flatMap((k) => builtIn.a?.[k] || []),
+      ...filter.topics.flatMap((k) => TOPICS[k].templates?.[builtIn.names[0]] || []),
+    ];
+  }
+
+  // Captions under a filter that work on any meme with this many text boxes.
+  function generalIdeas(filter, template, boxes) {
+    const audience = filter.keys.flatMap((k) => window.MEME_IDEAS?.audiences?.[k] || []);
+    const topics = filter.topics.flatMap((k) => exactPool(TOPICS[k], boxes));
+    return seededShuffle([...audience, ...topics], `${template?.name || 'meme'}:${filter.id}`);
+  }
+
+  // The ideas for the open picture under the chosen filter, and the hint to show with them.
+  function currentIdeas() {
+    const { builtIn, template, boxes } = ideaContext;
+    const filter = FILTERS.find((f) => f.id === ideaFilter);
+    if (filter) {
+      const own = ownIdeas(filter, builtIn);
+      const ideas = uniqueIdeas([...own, ...generalIdeas(filter, template, boxes)], boxes)
+        .slice(0, Math.max(12, own.length));
+      const hint = own.length
+        ? `${filter.label} ideas. ${IDEAS_HINT}`
+        : `${filter.label} ideas for any template, since this one has none of its own yet. ${IDEAS_HINT}`;
+      return { ideas, hint };
+    }
+    if (!builtIn) return { ideas: ideasFor(template, boxes), hint: IDEAS_HINT };
+    return { ideas: uniqueIdeas([...builtIn.c, ...FILTERS.flatMap((f) => ownIdeas(f, builtIn))], boxes), hint: IDEAS_HINT };
+  }
 
   // Every picture opens with the first idea filled in and more to pick from.
   function showIdeas(builtIn, template, { fill = true } = {}) {
-    openMeme = { builtIn, template };
     els.ideas.hidden = false;
     const boxes = Math.max(1, Math.min(6, state.layers.length || 2));
-    const topic = TOPICS[currentTopic];
-    const ideas = topic ? topicIdeas(topic, builtIn, template, boxes)
-      : builtIn ? builtIn.c : ideasFor(template, boxes);
+    ideaContext = { builtIn, template, boxes };
+    renderIdeaFilters();
+    const { ideas, hint } = currentIdeas();
     renderIdeas(ideas);
+    els.ideasStatus.textContent = hint;
     if (fill) {
       useIdea(ideas[0]);
       els.ideaList.querySelector('.idea')?.classList.add('is-active');
     }
     if (!postEdited || fill) { postIndex = 0; suggestPostText(); }
-    els.ideasStatus.textContent = topic
-      ? `${topic.label} ideas. Tap one to use it, or tap the text on the image to write your own.`
-      : 'Tap an idea to use it, or tap the text on the image to write your own.';
   }
 
   /* ---------------------------------------------------------------- */
